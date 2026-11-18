@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>升中面試專屬教練 | Secondary Interview Coach</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #faf6f0;
+      --bg-surface: #ffffff;
+      --bg-surface-alt: #f3efe8;
+      --text-primary: #2d2a26;
+      --text-secondary: #756e65;
+      --accent: #c8956c;
+      --accent-dark: #a6744c;
+    }
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(ellipse at 20% 0%, rgba(200,149,108,0.16) 0%, transparent 50%),
+                  radial-gradient(ellipse at 85% 100%, rgba(200,149,108,0.12) 0%, transparent 50%),
+                  var(--bg-primary);
+      color: var(--text-primary);
+    }
+    .title-font { font-family: 'ZCOOL QingKe HuangYou', 'Noto Sans TC', sans-serif; }
+    .warm-card {
+      background: var(--bg-surface);
+      border: 1.5px solid #e6e0d8;
+      box-shadow: 0 10px 28px rgba(45, 42, 38, 0.08);
+    }
+    .vibe-card { transition: all 0.25s ease; }
+    .vibe-card:hover { transform: translateY(-2px); }
+    .vibe-selected-lion { border-color: #d63031 !important; background: rgba(214,48,49,0.08) !important; box-shadow: 0 0 0 3px rgba(214,48,49,0.18); }
+    .vibe-selected-panda { border-color: #00a878 !important; background: rgba(0,168,120,0.08) !important; box-shadow: 0 0 0 3px rgba(0,168,120,0.18); }
+    .vibe-selected-owl { border-color: #2d6cdf !important; background: rgba(45,108,223,0.08) !important; box-shadow: 0 0 0 3px rgba(45,108,223,0.18); }
+    .scaffold-blank {
+      display: inline-block; min-width: 110px; border: none; border-bottom: 2px dashed #c8956c;
+      background: transparent; color: #a6744c; font-weight: 700; padding: 1px 6px; text-align: center; outline: none;
+    }
+    .scaffold-blank:focus { border-bottom-style: solid; background: rgba(200,149,108,0.12); border-radius: 4px 4px 0 0; }
+    .stage-active { background: #c8956c; color: #fff; box-shadow: 0 4px 12px rgba(200,149,108,0.35); }
+    .stage-done { background: #00a878; color: #fff; }
+    .stage-lock { background: #f3efe8; color: #847d74; }
+    .chat-scroll::-webkit-scrollbar { width: 6px; }
+    .chat-scroll::-webkit-scrollbar-thumb { background: #d6cfc5; border-radius: 9999px; }
+    @media print { .no-print { display: none !important; } body { background: #fff; } }
+  </style>
+</head>
+<body class="min-h-screen pb-10">
+
+  <!-- Top Warm HUD -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#e6e0d8] no-print">
+    <div class="max-w-5xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <span class="text-2xl" id="hudCoachIcon">🐼</span>
+        <div>
+          <h1 class="title-font text-xl sm:text-2xl text-[#c8956c] tracking-wide leading-none">升中面試專屬教練 · Interview Coach</h1>
+          <p class="text-[11px] text-[#756e65]">賽馬會萬鈞毅智書院 JCMKEC × 東華三院姚達之紀念小學（元朗）</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <span id="hudStudentBadge" class="px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">👤 未填班別姓名</span>
+        <select id="gradeSelect" class="bg-[#f3efe8] border border-[#e6e0d8] text-[#2d2a26] text-xs font-bold px-2.5 py-1.5 rounded-xl cursor-pointer focus:outline-none">
+          <option value="小一">P1 小一</option><option value="小二">P2 小二</option>
+          <option value="小三">P3 小三</option><option value="小四">P4 小四</option>
+          <option value="小五">P5 小五</option><option value="小六" selected>P6 小六</option>
+          <option value="中一">S1 中一</option><option value="中二">S2 中二</option>
+          <option value="中三">S3 中三</option><option value="中四">S4 中四</option>
+          <option value="中五">S5 中五</option><option value="中六">S6 中六</option>
+        </select>
+
+        <button id="openTeacherBtn" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1 cursor-pointer hover:bg-emerald-100" title="老師即時監察全班進度與能力分佈">
+          👩‍🏫 老師後台
+        </button>
+        <button id="shadowModeBtn" type="button" class="px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-800 text-xs font-bold flex items-center gap-1 cursor-pointer hover:bg-purple-100" title="供毅智校內簡介會老師及小導師試用，資料只暫存於本機瀏覽器，不上存 Google Drive">
+          <span>👻 試用模式 Shadow：</span><span id="shadowStatusText">關 OFF</span>
+        </button>
+        <button id="openSettingsBtn" type="button" class="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-800 text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-sky-100">
+          <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+          <span id="engineLabel">Poe 極速連線</span> ⚙️
+        </button>
+      </div>
+    </div>
+
+    <!-- 5-Stage Bilingual Quest Bar -->
+    <div class="max-w-5xl mx-auto px-4 pb-2.5 pt-1">
+      <div class="flex items-center justify-between gap-1.5 overflow-x-auto">
+        <button type="button" data-stage="1" class="stage-btn stage-active flex-1 min-w-[110px] px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition">🎭 1. 建檔 Profile</button>
+        <span class="text-[#c8956c] font-bold text-xs">➔</span>
+        <button type="button" data-stage="2" class="stage-btn stage-lock flex-1 min-w-[110px] px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition">📸 2. 自介 Intro</button>
+        <span class="text-[#c8956c] font-bold text-xs">➔</span>
+        <button type="button" data-stage="3" class="stage-btn stage-lock flex-1 min-w-[110px] px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition">🎤 3. 面試 Q&A</button>
+        <span class="text-[#c8956c] font-bold text-xs">➔</span>
+        <button type="button" data-stage="4" class="stage-btn stage-lock flex-1 min-w-[110px] px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition">🗣️ 4. 討論 Group</button>
+        <span class="text-[#c8956c] font-bold text-xs">➔</span>
+        <button type="button" data-stage="5" class="stage-btn stage-lock flex-1 min-w-[110px] px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition">🏆 5. 報告 Report</button>
+      </div>
+      <div class="mt-2 flex items-center gap-2">
+        <span class="text-[11px] font-black text-[#a6744c]">LV.<span id="lvlNum">1</span></span>
+        <div class="flex-1 h-2 bg-[#f3efe8] rounded-full overflow-hidden border border-[#e6e0d8]">
+          <div id="xpBar" class="h-full bg-gradient-to-r from-[#c8956c] to-[#00a878] transition-all duration-500" style="width: 10%"></div>
+        </div>
+        <span id="xpText" class="text-[11px] font-bold text-[#756e65]">10 / 100 XP</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 mt-5">
+    <div id="shadowBanner" class="hidden mb-4 p-3 rounded-2xl bg-purple-50 border-2 border-purple-300 flex flex-wrap items-center justify-between gap-2 text-xs text-purple-900 no-print">
+      <div>
+        <span class="font-black">👻 Shadow 試用模式啟動中（校內簡介會專用）：</span>
+        <span>老師及小導師可免建正式檔案直接試用全功能；所有資料<b>僅暫存於本機用戶端（sessionStorage）</b>，絕不上存至 Google Drive，關閉分頁即自動清除。</span>
+      </div>
+      <button id="clearShadowBtn" type="button" class="px-3 py-1.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold cursor-pointer">🗑️ 立即清除暫存資料</button>
+    </div>
+
+    <!-- STAGE 1: BILINGUAL PROFILE -->
+    <section id="stage-1" class="stage-panel warm-card rounded-3xl p-5 sm:p-7 space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg sm:text-xl font-black text-[#2d2a26]">關卡 1：選擇教練、目標中學與裝備 / Stage 1: Coach & Profile</h2>
+          <p class="text-xs text-[#756e65]">Pick a coach persona, target school (JCMKEC or Other), and tap your strengths.</p>
+        </div>
+        <button id="demo1Btn" type="button" class="px-3 py-1.5 rounded-xl bg-[#f3efe8] hover:bg-[#e6e0d8] text-xs font-bold text-[#a6744c] cursor-pointer">✨ 一鍵示範 Demo</button>
+      </div>
+
+      <div>
+        <div class="text-xs font-bold mb-2">🎭 1. 選擇面試教練風格 / Choose Coach Persona：</div>
+        <div class="grid grid-cols-3 gap-2.5">
+          <button type="button" class="vibe-card p-3 rounded-2xl bg-[#f3efe8] border-2 border-[#e6e0d8] text-center cursor-pointer" data-vibe="lion">
+            <div class="text-3xl mb-1">🦁</div><div class="text-xs font-black">獅子型 Lion</div><div class="text-[11px] text-[#756e65]">嚴肅追問 Strict</div>
+          </button>
+          <button type="button" class="vibe-card vibe-selected-panda p-3 rounded-2xl bg-[#f3efe8] border-2 border-[#e6e0d8] text-center cursor-pointer" data-vibe="panda">
+            <div class="text-3xl mb-1">🐼</div><div class="text-xs font-black">熊貓型 Panda</div><div class="text-[11px] text-[#756e65]">親切鼓勵 Friendly</div>
+          </button>
+          <button type="button" class="vibe-card p-3 rounded-2xl bg-[#f3efe8] border-2 border-[#e6e0d8] text-center cursor-pointer" data-vibe="owl">
+            <div class="text-3xl mb-1">🦉</div><div class="text-xs font-black">貓頭鷹型 Owl</div><div class="text-[11px] text-[#756e65]">專業邏輯 Academic</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div class="p-3 rounded-2xl bg-amber-50/70 border-2 border-[#c8956c]/50">
+          <label class="block text-xs font-black text-[#a6744c] mb-1">🏷️ 班別 Class <span class="text-rose-600">*必填</span></label>
+          <input id="rClass" list="classList" type="text" placeholder="例如：6A / 6B" class="w-full bg-white px-3 py-2 rounded-xl border border-[#e6e0d8] text-sm font-bold focus:border-[#c8956c] focus:outline-none" />
+          <datalist id="classList"><option value="6A"><option value="6B"><option value="6C"><option value="6D"><option value="P6 中文班"><option value="P6 英文班"></datalist>
+        </div>
+        <div class="p-3 rounded-2xl bg-amber-50/70 border-2 border-[#c8956c]/50">
+          <label class="block text-xs font-black text-[#a6744c] mb-1">👤 學生姓名 Name <span class="text-rose-600">*必填</span></label>
+          <input id="rName" type="text" placeholder="陳一心 / Anson Chan" class="w-full bg-white px-3 py-2 rounded-xl border border-[#e6e0d8] text-sm font-bold focus:border-[#c8956c] focus:outline-none" />
+        </div>
+        <div class="p-3 rounded-2xl bg-[#f3efe8] border border-[#e6e0d8] space-y-1.5">
+          <label class="block text-xs font-bold">🏫 目標中學 / Target School</label>
+          <select id="schoolPreset" class="w-full bg-white px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs font-bold focus:outline-none">
+            <option value="賽馬會萬鈞毅智書院 (JCMKEC)">賽馬會萬鈞毅智書院 (JCMKEC)</option>
+            <option value="CUSTOM">其他中學（自由輸入） / Other School</option>
+          </select>
+          <input id="rTargetCustom" type="text" placeholder="請輸入其他心儀中學 / Enter school name..." class="hidden w-full bg-white px-3 py-2 rounded-xl border-2 border-[#c8956c] text-xs font-bold focus:outline-none" />
+        </div>
+      </div>
+
+      <div class="p-3.5 rounded-2xl bg-[#faf6f0] border border-[#e6e0d8] space-y-2">
+        <div class="text-xs font-bold">🌟 目標學校特色 / School Focus：</div>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="全人教育 Holistic Education">🌈 全人教育 Holistic</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="STEAM 創科教育">🚀 STEAM 創科</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="活動多元 Diverse Activities">🎨 活動多元 Diverse</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="關愛校園 Caring Culture">💖 關愛校園 Caring</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="英語語境 English Environment">🗣️ 英語語境 English</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="境外交流 Global Learning">✈️ 境外交流 Global</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="體育發展 Sports Excellence">⚽ 體育發展 Sports</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="藝術音樂 Arts & Music">🎵 藝術音樂 Arts</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="品德教育 Values Education">🌱 品德教育 Values</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="school" data-val="自主學習 Self-directed Learning">📚 自主學習 Self-study</button>
+        </div>
+        <input id="customSchoolNote" type="text" placeholder="補充校訓或特色 / Motto or other features..." class="w-full bg-white px-3 py-1.5 rounded-xl border border-[#e6e0d8] text-xs focus:outline-none" />
+      </div>
+
+      <div class="p-3.5 rounded-2xl bg-[#faf6f0] border border-[#e6e0d8] space-y-2">
+        <div class="text-xs font-bold">⭐ 個人經歷與強項 / Experiences & Strengths：</div>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="步操管樂團 Wind Band">🎺 管樂團 Wind Band</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="STEM 與無人機 Drone Club">🛸 無人機 STEM</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="桌遊校隊 Board Games">🎲 桌遊隊 Board Games</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="英語話劇 English Drama">🎭 英語話劇 Drama</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="辯論／朗誦隊 Speech & Debate">🎤 辯論朗誦 Debate</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="運動校隊 Sports Team">🏀 運動校隊 Sports</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="合唱團／樂器 Choir & Music">🎹 音樂樂器 Music</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="童軍／女童軍 Scouts">⛺ 童軍 Scouts</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="風紀領袖生 Prefect">🛡️ 領袖生 Prefect</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="編程機械人 Coding & Robotics">💻 編程機械人 Coding</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="視覺藝術 Visual Arts">🎨 視覺藝術 Arts</button>
+          <button type="button" class="equip-chip px-2.5 py-1 rounded-full text-xs font-bold bg-white border border-[#e6e0d8] cursor-pointer" data-group="exp" data-val="義工服務 Volunteering">🤝 義工 Volunteering</button>
+        </div>
+        <input id="customExpNote" type="text" placeholder="補充其他強項或獎項 / Other strengths or awards..." class="w-full bg-white px-3 py-1.5 rounded-xl border border-[#e6e0d8] text-xs focus:outline-none" />
+      </div>
+
+      <div class="flex justify-end">
+        <button id="toStage2Btn" type="button" class="px-6 py-3 rounded-2xl bg-[#c8956c] hover:bg-[#a6744c] text-white font-black text-sm shadow cursor-pointer transition">
+          進入關卡 2：自介工作坊 / Next Stage ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- STAGE 2: MICRO-STEP HINTS + HANDWRITE SCAN + AUTO-GRADE -->
+    <section id="stage-2" class="stage-panel hidden warm-card rounded-3xl p-5 sm:p-7 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg sm:text-xl font-black">關卡 2：小步子寫作・手寫掃描與批改 / Stage 2: Self-Intro</h2>
+          <p class="text-xs text-[#756e65]">跟住 4 個小步子提示在紙上手寫，再拍照掃描給 AI 批改！Follow 4 micro-steps to write & scan.</p>
+        </div>
+        <button id="toggleScaffoldBtn" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold cursor-pointer">📝 填充式鷹架 / Scaffold</button>
+      </div>
+
+      <!-- 4 Micro-Step Hints Bar (小步子提示) -->
+      <div class="p-3.5 rounded-2xl bg-[#faf6f0] border border-[#e6e0d8] space-y-2.5">
+        <div class="text-xs font-black text-[#a6744c]">🪜 小步子寫作提示（按順序點選一步一步寫）/ Step-by-Step Micro-Hints：</div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <button type="button" class="micro-step-btn px-3 py-2 rounded-xl bg-white border-2 border-[#c8956c] text-xs font-bold text-[#2d2a26] cursor-pointer" data-step="1">Step 1：問候 Greeting</button>
+          <button type="button" class="micro-step-btn px-3 py-2 rounded-xl bg-white border border-[#e6e0d8] text-xs font-bold text-[#756e65] cursor-pointer" data-step="2">Step 2：學校 School</button>
+          <button type="button" class="micro-step-btn px-3 py-2 rounded-xl bg-white border border-[#e6e0d8] text-xs font-bold text-[#756e65] cursor-pointer" data-step="3">Step 3：經歷 Experience</button>
+          <button type="button" class="micro-step-btn px-3 py-2 rounded-xl bg-white border border-[#e6e0d8] text-xs font-bold text-[#756e65] cursor-pointer" data-step="4">Step 4：目標 Closing</button>
+        </div>
+        <div id="microHintBox" class="p-3 rounded-xl bg-white border border-[#e6e0d8] text-xs space-y-1.5">
+          <div class="font-bold text-[#a6744c]">💡 Step 1 小提示：先禮貌打招呼，講出你的名字和小學</div>
+          <div>• 中文：各位老師好！我叫＿＿，現就讀東華三院姚達之紀念小學（元朗）。</div>
+          <div>• English：<em>Good morning, teachers! My name is ___, from TWGHs Yiu Dak Chi Memorial Primary School.</em></div>
+        </div>
+      </div>
+
+      <!-- Optional Inline Scaffold -->
+      <div id="scaffoldCard" class="hidden p-4 rounded-2xl bg-[#faf6f0] border-2 border-[#c8956c]/40 text-xs sm:text-sm leading-loose space-y-2">
+        <div><input class="scaffold-blank" data-k="greet" value="Good morning" />, teachers! My name is <input class="scaffold-blank" data-k="name" placeholder="Name" /> from <input class="scaffold-blank" data-k="cur" value="TWGHs Yiu Dak Chi Memorial Primary School" />.</div>
+        <div>I want to join <input class="scaffold-blank" data-k="target" placeholder="Target School" /> because it focuses on <input class="scaffold-blank" data-k="focus" placeholder="School Focus" />.</div>
+        <div>I joined <input class="scaffold-blank" data-k="exp" placeholder="Activity" /> and learned <input class="scaffold-blank" data-k="learn" placeholder="Skill" />. Thank you!</div>
+        <button id="applyScaffoldBtn" type="button" class="px-3.5 py-1.5 rounded-xl bg-[#c8956c] text-white text-xs font-bold cursor-pointer">⬇️ 匯入編輯區 / Insert</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-7 space-y-3">
+          <div class="p-3 rounded-2xl bg-amber-50/80 border-2 border-dashed border-[#c8956c] flex flex-wrap items-center justify-between gap-2">
+            <div class="text-xs">
+              <div class="font-black">📸 先紙上手寫，再拍照自動識字 / Handwrite & Scan</div>
+              <div class="text-[11px] text-[#756e65]">Upload photo to auto-transcribe via Poe AI</div>
+            </div>
+            <label class="px-3.5 py-2 rounded-xl bg-[#c8956c] hover:bg-[#a6744c] text-white text-xs font-black cursor-pointer shadow">
+              📷 拍照掃描 Scan
+              <input id="scanFileInput" type="file" accept="image/*" capture="environment" class="hidden" />
+            </label>
+          </div>
+
+          <div id="scanPreviewWrap" class="hidden p-2.5 rounded-2xl bg-[#f3efe8] border border-[#e6e0d8] space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span id="ocrStatusLabel">🖼️ 已掃描 / Scanned</span>
+              <button id="clearScanBtn" type="button" class="text-rose-600 cursor-pointer">移除 Remove</button>
+            </div>
+            <img id="scanPreviewImg" alt="Handwritten draft" class="max-h-40 mx-auto rounded-xl object-contain" />
+          </div>
+
+          <div class="relative">
+            <textarea id="introInput" rows="5" placeholder="手寫後 AI 會自動填入文字，亦可用「🎤 語音輸入」或打字修改... / Your draft appears here..." class="w-full p-3.5 rounded-2xl bg-[#f3efe8] border-2 border-transparent focus:border-[#c8956c] focus:bg-white text-sm focus:outline-none"></textarea>
+            <div class="absolute bottom-3 right-3 flex gap-1.5">
+              <button id="ttsIntroBtn" type="button" class="px-2.5 py-1 rounded-lg bg-white border border-[#e6e0d8] text-xs font-bold cursor-pointer">🔊 朗讀 Listen</button>
+              <button id="voiceInputBtn" type="button" class="px-2.5 py-1 rounded-lg bg-white border border-[#e6e0d8] text-xs font-bold cursor-pointer">🎤 語音 Speak</button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap gap-2">
+              <button id="gradeIntroBtn" type="button" class="px-4 py-2.5 rounded-xl bg-[#c8956c] hover:bg-[#a6744c] text-white text-xs sm:text-sm font-black shadow cursor-pointer">🤖 AI 自動批改 / Auto-Grade</button>
+              <button id="lockBeforeBtn" type="button" class="px-3 py-2.5 rounded-xl bg-[#f3efe8] text-xs font-bold cursor-pointer">📌 記錄初稿 Save Draft</button>
+            </div>
+            <span id="wordCountBadge" class="text-xs font-bold text-[#756e65]">0 words</span>
+          </div>
+
+          <div id="compareBox" class="hidden grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[#e6e0d8]">
+            <div class="p-2.5 rounded-xl bg-[#f3efe8]"><div class="font-bold text-[#756e65] mb-1">修改前 Before</div><div id="beforeText" class="whitespace-pre-wrap"></div></div>
+            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200"><div class="font-bold text-emerald-700 mb-1">修改後 After</div><div id="afterText" class="whitespace-pre-wrap"></div></div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 p-4 rounded-2xl bg-[#f3efe8] border border-[#e6e0d8] flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-black">📊 AI 批改報告 / Feedback</span>
+              <span id="introScorePill" class="px-2.5 py-1 rounded-lg bg-white text-xs font-black text-[#756e65]">未評分</span>
+            </div>
+            <div id="introFeedback" class="text-xs text-[#2d2a26] space-y-2 leading-relaxed">
+              按「🤖 AI 自動批改」，毅老師會以中英對照給出 1–5 分品等、錯字檢查及修改提問！
+            </div>
+          </div>
+          <button id="toStage3Btn" type="button" class="w-full py-2.5 rounded-xl bg-[#00a878] hover:opacity-95 text-white text-xs font-black cursor-pointer">進入關卡 3：模擬面試 / Next ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STAGE 3: BILINGUAL MOCK INTERVIEW -->
+    <section id="stage-3" class="stage-panel hidden warm-card rounded-3xl p-5 sm:p-7 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg sm:text-xl font-black">關卡 3：中英對照模擬面試 / Stage 3: Bilingual Mock Q&A</h2>
+          <p class="text-xs text-[#756e65]">Bilingual questions, gentle voice playback, 60s prep timer & AI instant feedback.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="timerBtn" type="button" class="px-3 py-2 rounded-xl bg-[#f3efe8] border border-[#e6e0d8] text-xs font-black cursor-pointer">⏱️ 60s 計時：<span id="timerVal">60</span>s</button>
+          <button id="genQABtn" type="button" class="px-4 py-2 rounded-xl bg-[#c8956c] hover:bg-[#a6744c] text-white text-xs font-black cursor-pointer">⚡ 生成面試題 / Generate Q&A</button>
+        </div>
+      </div>
+
+      <!-- Picture-Guided Answer Builder for Stage 3 -->
+      <div class="p-3.5 rounded-2xl bg-[#faf6f0] border border-[#e6e0d8] space-y-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div class="text-xs font-black text-[#a6744c]">🖼️ 圖片引導答題小幫手（對應當前題目與你的輸入）/ Context-Aware Picture Hints</div>
+            <div id="s3PicTargetLabel" class="text-[11px] font-bold text-[#756e65]">🔒 請先在題目草稿區自己寫下至少 8 個字（2–3 個詞），即可解鎖圖片提示！</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="aiRefreshS3PicBtn" type="button" class="px-2.5 py-1 rounded-lg bg-[#c8956c] text-white text-[11px] font-bold cursor-pointer">✨ AI 依本題與輸入更新圖卡</button>
+            <button id="toggleS3PicBtn" type="button" class="text-[11px] font-bold text-[#756e65] underline cursor-pointer">收合 / 展開</button>
+          </div>
+        </div>
+        <div id="s3PicGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <button type="button" class="s3-pic-btn p-2.5 rounded-2xl bg-white border border-[#e6e0d8] hover:border-[#c8956c] text-left flex items-center gap-2.5 cursor-pointer transition" data-insert="一開始我比較害羞，亦曾遇到困難。 / At first, I was shy and faced challenges. ">
+            <svg viewBox="0 0 64 64" class="w-12 h-12 shrink-0 rounded-xl bg-amber-50 p-1">
+              <circle cx="32" cy="24" r="12" fill="#FDE68A" stroke="#D97706" stroke-width="2"/>
+              <path d="M27 22 Q29 20 31 22 M33 22 Q35 20 37 22" stroke="#92400E" stroke-width="2" fill="none"/>
+              <path d="M28 29 Q32 27 36 29" stroke="#92400E" stroke-width="2" fill="none"/>
+              <path d="M18 52 C18 40 46 40 46 52" fill="#FBBF24" stroke="#D97706" stroke-width="2"/>
+              <text x="45" y="18" font-size="14" font-weight="bold" fill="#DC2626">?</text>
+            </svg>
+            <div class="text-[11px] leading-snug">
+              <div id="s3T0" class="font-black text-[#a6744c]">1️⃣ 起手回應 Opener</div>
+              <div id="s3D0" class="text-[#2d2a26] line-clamp-2">點選題目後自動對應</div>
+              <div class="text-[#00a878] font-bold mt-0.5">➕ 點擊插入句式</div>
+            </div>
+          </button>
+
+          <button type="button" class="s3-pic-btn p-2.5 rounded-2xl bg-white border border-[#e6e0d8] hover:border-[#c8956c] text-left flex items-center gap-2.5 cursor-pointer transition" data-insert="後來我每天練習，並主動請教老師與隊友。 / Then I practised daily and asked teachers for advice. ">
+            <svg viewBox="0 0 64 64" class="w-12 h-12 shrink-0 rounded-xl bg-sky-50 p-1">
+              <circle cx="22" cy="24" r="9" fill="#BAE6FD" stroke="#0284C7" stroke-width="2"/>
+              <circle cx="42" cy="24" r="9" fill="#DDD6FE" stroke="#7C3AED" stroke-width="2"/>
+              <path d="M12 50 C12 39 32 39 32 50" fill="#38BDF8" stroke="#0284C7" stroke-width="2"/>
+              <path d="M32 50 C32 39 52 39 52 50" fill="#A78BFA" stroke="#7C3AED" stroke-width="2"/>
+              <path d="M26 14 L38 14" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <div class="text-[11px] leading-snug">
+              <div id="s3T1" class="font-black text-sky-700">2️⃣ 經歷例子 Example</div>
+              <div id="s3D1" class="text-[#2d2a26] line-clamp-2">自動扣連你的強項與校情</div>
+              <div class="text-[#00a878] font-bold mt-0.5">➕ 點擊插入句式</div>
+            </div>
+          </button>
+
+          <button type="button" class="s3-pic-btn p-2.5 rounded-2xl bg-white border border-[#e6e0d8] hover:border-[#c8956c] text-left flex items-center gap-2.5 cursor-pointer transition" data-insert="最後我克服了挑戰，變得更有自信！ / Finally, I overcame it and became more confident! ">
+            <svg viewBox="0 0 64 64" class="w-12 h-12 shrink-0 rounded-xl bg-emerald-50 p-1">
+              <circle cx="32" cy="26" r="12" fill="#A7F3D0" stroke="#059669" stroke-width="2"/>
+              <path d="M27 24 Q29 21 31 24 M33 24 Q35 21 37 24" stroke="#065F46" stroke-width="2" fill="none"/>
+              <path d="M27 29 Q32 34 37 29" stroke="#065F46" stroke-width="2" fill="none"/>
+              <path d="M18 52 C18 41 46 41 46 52" fill="#34D399" stroke="#059669" stroke-width="2"/>
+              <polygon points="49,10 51,15 56,15 52,18 54,23 49,20 44,23 46,18 42,15 47,15" fill="#FBBF24"/>
+            </svg>
+            <div class="text-[11px] leading-snug">
+              <div id="s3T2" class="font-black text-emerald-700">3️⃣ 總結收尾 Closing</div>
+              <div id="s3D2" class="text-[#2d2a26] line-clamp-2">自然總結學到的態度</div>
+              <div class="text-[#00a878] font-bold mt-0.5">➕ 點擊插入句式</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div id="qaCards" class="space-y-4">
+        <div class="p-5 rounded-2xl bg-[#f3efe8] text-xs text-[#756e65] text-center">
+          點擊「⚡ 生成面試題 / Generate Q&A」，系統會即時產生 3 條中英對照題目與準備草稿區！
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button id="toStage4Btn" type="button" class="px-6 py-2.5 rounded-xl bg-[#00a878] text-white text-xs font-black cursor-pointer">進入關卡 4：小組討論 / Next ➔</button>
+      </div>
+    </section>
+
+    <!-- STAGE 4: BILINGUAL GROUP DISCUSSION (Clean formatted cards, no <br> or **) -->
+    <section id="stage-4" class="stage-panel hidden warm-card rounded-3xl p-5 sm:p-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg sm:text-xl font-black">關卡 4：AI 小組討論室 / Stage 4: Group Discussion</h2>
+          <p class="text-xs text-[#756e65]">Chat with AI peers (小毅, 小智, 小德) using 應認例問, then get graded!</p>
+        </div>
+        <button id="evalDiscussBtn" type="button" class="px-4 py-2 rounded-xl bg-[#00a878] text-white text-xs font-black shadow cursor-pointer">📊 討論評價 / Evaluate</button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 p-2.5 rounded-2xl bg-[#faf6f0] border border-[#e6e0d8]">
+        <span class="text-xs font-black text-[#a6744c]">🌐 1. 先選討論語言 / Choose Language <span class="text-rose-600">*必選</span>：</span>
+        <button type="button" class="d-lang-btn px-3 py-1.5 rounded-xl bg-white border-2 border-[#e6e0d8] text-xs font-bold cursor-pointer" data-lang="zh">🇭🇰 中文討論 (Chinese)</button>
+        <button type="button" class="d-lang-btn px-3 py-1.5 rounded-xl bg-white border-2 border-[#e6e0d8] text-xs font-bold cursor-pointer" data-lang="en">🇬🇧 English Discussion</button>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <select id="discussTopic" class="flex-1 min-w-[220px] px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs font-bold bg-[#f3efe8]">
+          <option value="你認為創新科技對小學生學習有甚麼影響？ / How does innovative tech affect primary learning?">1. 創新科技對小學生學習有甚麼影響？ / Tech & Learning</option>
+          <option value="短視頻對學生成長有意義嗎？ / Are short videos meaningful for students?">2. 短視頻對學生成長有意義嗎？ / Short Videos</option>
+          <option value="義工服務對小學生學習有意義嗎？ / Is volunteering meaningful for students?">3. 義工服務對小學生學習有意義嗎？ / Volunteering</option>
+        </select>
+        <button id="startDiscussBtn" type="button" class="px-3.5 py-2 rounded-xl bg-[#2d2a26] text-white text-xs font-bold cursor-pointer">開始 / Start</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-8 flex flex-col h-[340px] border border-[#e6e0d8] rounded-2xl p-3 bg-[#faf6f0]">
+          <div id="discussChat" class="flex-1 overflow-y-auto chat-scroll space-y-2.5 text-xs">
+            <div class="p-3 rounded-xl bg-white border border-[#e6e0d8]">🤖 <strong>教練 Coach：</strong>請按「開始 / Start」，再用「應認例問」發表你的意見！</div>
+          </div>
+          <div class="pt-2 flex gap-2">
+            <input id="discussInput" type="text" placeholder="輸入或語音發言 / Type or speak your view..." class="flex-1 px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs bg-white focus:outline-none" />
+            <button id="voiceDiscussBtn" type="button" class="px-3 py-2 rounded-xl bg-white border border-[#e6e0d8] text-xs font-bold cursor-pointer">🎤</button>
+            <button id="sendDiscussBtn" type="button" class="px-4 py-2 rounded-xl bg-[#c8956c] text-white text-xs font-black cursor-pointer">發言 Send</button>
+          </div>
+        </div>
+        <div class="lg:col-span-4 space-y-3">
+          <div class="p-3 rounded-2xl bg-[#f3efe8] text-xs space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <div class="font-black text-[#a6744c]">🖼️ 圖解「應認例問」<span id="s4LockBadge" class="ml-1 text-[10px] text-rose-600">🔒 先寫8字解鎖</span></div>
+              <button id="aiRefreshS4PicBtn" type="button" class="px-2 py-0.5 rounded-lg bg-[#c8956c] text-white text-[10px] font-bold cursor-pointer">✨ 依對話更新</button>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button type="button" class="s4-pic-btn p-2 rounded-xl bg-white border border-[#e6e0d8] hover:border-[#c8956c] text-left flex items-center gap-1.5 cursor-pointer" data-step="respond">
+                <svg viewBox="0 0 40 40" class="w-8 h-8 shrink-0 rounded-lg bg-blue-50 p-0.5">
+                  <circle cx="14" cy="16" r="6" fill="#93C5FD"/><circle cx="26" cy="16" r="6" fill="#FDE68A"/>
+                  <path d="M8 32 C8 25 20 25 20 32" fill="#60A5FA"/><path d="M20 32 C20 25 32 25 32 32" fill="#FBBF24"/>
+                </svg>
+                <div class="text-[11px] leading-tight"><div class="font-black text-blue-700">1️⃣ 應 Respond</div><div id="s4SubRespond" class="text-[#756e65] line-clamp-2">回應組員觀點</div></div>
+              </button>
+              <button type="button" class="s4-pic-btn p-2 rounded-xl bg-white border border-[#e6e0d8] hover:border-[#c8956c] text-left flex items-center gap-1.5 cursor-pointer" data-step="view">
+                <svg viewBox="0 0 40 40" class="w-8 h-8 shrink-0 rounded-lg bg-amber-50 p-0.5">
+                  <circle cx="20" cy="16" r="8" fill="#FDE047" stroke="#CA8A04" stroke-width="1.5"/>
+                  <rect x="17" y="25" width="6" height="5" rx="1" fill="#CA8A04"/>
+                  <path d="M20 4 L20 7 M8 16 L11 16 M29 16 L32 16" stroke="#EAB308" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <div class="text-[11px] leading-tight"><div class="font-black text-amber-700">2️⃣ 認 View</div><div id="s4SubView" class="text-[#756e65] line-clamp-2">表達自己立場</div></div>
+              </button>
+              <button type="button" class="s4-pic-btn p-2 rounded-xl bg-white border border-[#e6e0d8] hover:border-[#c8956c] text-left flex items-center gap-1.5 cursor-pointer" data-step="example">
+                <svg viewBox="0 0 40 40" class="w-8 h-8 shrink-0 rounded-lg bg-emerald-50 p-0.5">
+                  <rect x="8" y="10" width="24" height="18" rx="3" fill="#6EE7B7" stroke="#059669" stroke-width="1.5"/>
+                  <path d="M13 16 H27 M13 21 H22" stroke="#065F46" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <div class="text-[11px] leading-tight"><div class="font-black text-emerald-700">3️⃣ 例 Example</div><div id="s4SubExample" class="text-[#756e65] line-clamp-2">貼合題目舉例</div></div>
+              </button>
+              <button type="button" class="s4-pic-btn p-2 rounded-xl bg-white border border-[#e6e0d8] hover:border-[#c8956c] text-left flex items-center gap-1.5 cursor-pointer" data-step="ask">
+                <svg viewBox="0 0 40 40" class="w-8 h-8 shrink-0 rounded-lg bg-purple-50 p-0.5">
+                  <circle cx="20" cy="20" r="13" fill="#E9D5FF" stroke="#7E22CE" stroke-width="1.5"/>
+                  <text x="15" y="26" font-size="18" font-weight="bold" fill="#6B21A8">?</text>
+                </svg>
+                <div class="text-[11px] leading-tight"><div class="font-black text-purple-700">4️⃣ 問 Ask</div><div id="s4SubAsk" class="text-[#756e65] line-clamp-2">反問組員看法</div></div>
+              </button>
+            </div>
+          </div>
+          <div id="discussEvalBox" class="p-3 rounded-2xl bg-white border border-[#e6e0d8] text-xs text-[#756e65] whitespace-pre-wrap">完成發言後按「📊 討論評價 / Evaluate」取得評分！</div>
+          <button id="toStage5Btn" type="button" class="w-full py-2.5 rounded-xl bg-[#c8956c] text-white text-xs font-black cursor-pointer">前往關卡 5：通關報告 / Victory ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STAGE 5: VICTORY -->
+    <section id="stage-5" class="stage-panel hidden warm-card rounded-3xl p-6 text-center space-y-5">
+      <div class="text-5xl">🏆</div>
+      <div><h2 class="title-font text-3xl text-[#c8956c]">恭喜通關！Mission Complete!</h2><p class="text-xs text-[#756e65] mt-1">賽馬會萬鈞毅智書院 × 東華三院姚達之紀念小學（元朗）</p></div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+        <div class="p-4 rounded-2xl bg-[#f3efe8]"><div class="text-xs font-bold text-[#756e65]">自介評分 / Intro Score</div><div id="vIntro" class="text-xl font-black mt-1">尚未評分</div></div>
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200"><div class="text-xs font-bold text-emerald-700">討論評級 / Discussion</div><div id="vDiscuss" class="text-xl font-black text-emerald-800 mt-1">尚未評分</div></div>
+        <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200"><div class="text-xs font-bold text-amber-800">累積經驗 / Total XP</div><div id="vXp" class="text-xl font-black text-amber-900 mt-1">10 XP</div></div>
+      </div>
+      <div class="p-4 rounded-2xl bg-[#faf6f0] border border-[#e6e0d8] text-left space-y-2">
+        <div class="text-xs font-black text-[#a6744c]">📤 匯出成品予老師 / Export Student Work：</div>
+        <div id="victoryStudentInfo" class="text-xs font-bold text-[#2d2a26]">班別：— ｜ 姓名：— ｜ 目標中學：—</div>
+        <div class="flex flex-wrap gap-2 pt-1 no-print">
+          <button id="exportHtmlBtn" type="button" class="px-4 py-2.5 rounded-xl bg-[#00a878] hover:opacity-95 text-white text-xs font-black shadow cursor-pointer">📥 匯出成品檔案（交予老師） / Export HTML</button>
+          <button id="copySummaryBtn" type="button" class="px-4 py-2.5 rounded-xl bg-[#c8956c] hover:bg-[#a6744c] text-white text-xs font-black shadow cursor-pointer">📋 複製文字總結 / Copy Summary</button>
+          <button id="printBtn" type="button" class="px-4 py-2.5 rounded-xl bg-[#2d2a26] text-white text-xs font-black cursor-pointer">🖨️ 列印 / 另存 PDF</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- API Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 z-50 bg-black/45 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 shadow-2xl border border-[#e6e0d8]">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-black">⚙️ AI 引擎設定 / Engine Settings</h3>
+        <button id="closeSettingsBtn" type="button" class="text-[#756e65] font-bold cursor-pointer">✕</button>
+      </div>
+      <select id="aiModeSelect" class="w-full px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs font-bold">
+        <option value="poe" selected>付費 Poe API（極速模型，已自動連線）</option>
+        <option value="offline">課堂免 Key 離線模式</option>
+      </select>
+      <div id="poeConfigBox" class="space-y-2 p-3 rounded-xl bg-[#faf6f0] border border-[#e6e0d8]">
+        <label class="block text-[11px] font-bold text-[#756e65]">Poe API Key：</label>
+        <input id="poeKeyInput" type="password" value="sk-poe-Hzwb134lJ_m-6gCxWRY-VtFW6c9tpLuYns6HyPP0xpo" class="w-full px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs bg-white" />
+        <label class="block text-[11px] font-bold text-[#756e65]">選擇速度模型 / Model Speed：</label>
+        <select id="poeModelSelect" class="w-full px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs bg-white font-bold">
+          <option value="GPT-4o-mini" selected>GPT-4o-mini（⚡ 1秒極速回應＋睇圖識字）</option>
+          <option value="Gemini-2.5-Flash">Gemini-2.5-Flash（⚡ 極速＋強效手寫OCR）</option>
+          <option value="Claude-Sonnet-4.6">Claude-Sonnet-4.6（深度分析，較慢）</option>
+        </select>
+      </div>
+            <div class="space-y-1.5 p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
+        <label class="block text-[11px] font-bold text-emerald-900">📊 Google Sheet 即時同步網址 (Apps Script URL)：</label>
+        <input id="gasUrlInput" type="url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs bg-white" />
+        <div class="text-[10px] text-emerald-700">填入後，學生進度與分數會自動回傳至你的 Google Sheet（Shadow 模式除外）。</div>
+      </div>
+      <div class="flex gap-2">
+        <button id="testApiBtn" type="button" class="px-4 py-2.5 rounded-xl bg-[#f3efe8] hover:bg-[#e6e0d8] text-xs font-bold cursor-pointer">🔌 測試連線</button>
+        <button id="saveSettingsBtn" type="button" class="flex-1 py-2.5 rounded-xl bg-[#c8956c] text-white text-xs font-black cursor-pointer">儲存設定</button>
+      </div>
+      <div id="apiTestResult" class="text-[11px] font-bold hidden"></div>
+    </div>
+  </div>
+
+  <!-- Teacher Monitoring Dashboard Modal -->
+  <div id="teacherModal" class="fixed inset-0 z-50 bg-black/55 hidden items-center justify-center p-3 sm:p-5">
+    <div class="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-[#e6e0d8] overflow-hidden">
+      <div class="px-5 py-3.5 bg-[#1e293b] text-white flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-black">👩‍🏫 老師即時監察後台｜全班能力與進度儀表板</h3>
+          <p class="text-[11px] text-slate-300">Live Student Progress, 1–5 Rubric Distribution & Individual Work Inspector</p>
+        </div>
+        <button id="closeTeacherBtn" type="button" class="text-slate-300 hover:text-white text-lg font-bold cursor-pointer">✕</button>
+      </div>
+
+      <!-- PIN Gate -->
+      <div id="teacherPinGate" class="p-8 text-center space-y-3">
+        <div class="text-3xl">🔐</div>
+        <div class="text-sm font-black text-[#2d2a26]">請輸入老師後台密碼 / Enter Teacher PIN</div>
+        <div class="text-xs text-[#756e65]">（預設密碼 Default PIN：<code class="bg-[#f3efe8] px-1.5 py-0.5 rounded">jcmkec2026</code>）</div>
+        <div class="flex justify-center gap-2 max-w-xs mx-auto pt-1">
+          <input id="teacherPinInput" type="password" placeholder="輸入密碼..." class="flex-1 px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs" />
+          <button id="unlockTeacherBtn" type="button" class="px-4 py-2 rounded-xl bg-[#00a878] text-white text-xs font-black cursor-pointer">解鎖進入</button>
+        </div>
+      </div>
+
+      <!-- Dashboard Body -->
+      <div id="teacherDashBody" class="hidden flex-1 overflow-y-auto p-5 space-y-4 bg-[#faf6f0]">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="refreshLiveBtn" type="button" class="px-4 py-2 rounded-xl bg-[#00a878] text-white text-xs font-black shadow cursor-pointer">🔄 讀取最新全班進度</button>
+            <label class="px-3.5 py-2 rounded-xl bg-white border border-[#e6e0d8] text-xs font-bold cursor-pointer hover:bg-[#f3efe8]">
+              📥 批次匯入學生 HTML 成品
+              <input id="importStudentFiles" type="file" accept=".html" multiple class="hidden" />
+            </label>
+            <select id="tClassFilter" class="px-3 py-2 rounded-xl bg-white border border-[#e6e0d8] text-xs font-bold">
+              <option value="ALL">全部班別 (All)</option>
+            </select>
+          </div>
+          <button id="exportCsvBtn" type="button" class="px-3.5 py-2 rounded-xl bg-[#1e293b] text-white text-xs font-bold cursor-pointer">📊 匯出全班 CSV 總表</button>
+        </div>
+
+        <div id="tGasStatus" class="text-[11px] font-bold text-[#756e65]"></div>
+
+        <!-- KPI Row -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="p-3.5 rounded-2xl bg-white border border-[#e6e0d8]"><div class="text-[11px] font-bold text-[#756e65]">已追蹤學生數</div><div id="tKpiCount" class="text-2xl font-black text-[#1e293b] mt-0.5">0</div></div>
+          <div class="p-3.5 rounded-2xl bg-white border border-[#e6e0d8]"><div class="text-[11px] font-bold text-[#756e65]">自介平均分 (1–5)</div><div id="tKpiAvg" class="text-2xl font-black text-[#00a878] mt-0.5">—</div></div>
+          <div class="p-3.5 rounded-2xl bg-white border border-[#e6e0d8]"><div class="text-[11px] font-bold text-[#756e65]">已完成討論</div><div id="tKpiDiscuss" class="text-2xl font-black text-[#c8956c] mt-0.5">0</div></div>
+          <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200"><div class="text-[11px] font-bold text-rose-700">需重點跟進 (1–2分/未批改)</div><div id="tKpiSupport" class="text-2xl font-black text-rose-700 mt-0.5">0</div></div>
+        </div>
+
+        <!-- 1-5 Rubric Distribution Bar -->
+        <div class="p-4 rounded-2xl bg-white border border-[#e6e0d8] space-y-2">
+          <div class="text-xs font-black text-[#1e293b]">📈 全班自介 1–5 分能力分佈圖</div>
+          <div id="tScoreDist" class="grid grid-cols-5 gap-2 text-center text-xs pt-1"></div>
+        </div>
+
+        <!-- Student Table -->
+        <div class="bg-white rounded-2xl border border-[#e6e0d8] overflow-x-auto">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr class="bg-[#f3efe8] text-[#756e65] border-b border-[#e6e0d8]">
+                <th class="p-2.5">班別</th><th class="p-2.5">姓名</th><th class="p-2.5">目標中學</th>
+                <th class="p-2.5">關卡</th><th class="p-2.5">XP</th><th class="p-2.5">自介分數</th>
+                <th class="p-2.5">討論評級</th><th class="p-2.5">更新時間</th><th class="p-2.5">詳情</th>
+              </tr>
+            </thead>
+            <tbody id="tStudentRows" class="divide-y divide-[#f1ece4]">
+              <tr><td colspan="9" class="p-6 text-center text-[#756e65]">請點擊「🔄 讀取最新全班進度」或匯入學生 HTML 成品。</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Detail Inspector -->
+        <div id="tDetailCard" class="hidden p-4 rounded-2xl bg-white border-2 border-[#c8956c] space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <div id="tDetailTitle" class="text-sm font-black text-[#a6744c]">學生作品詳情</div>
+            <button type="button" onclick="document.getElementById('tDetailCard').classList.add('hidden')" class="text-[#756e65] font-bold cursor-pointer">收合 ✕</button>
+          </div>
+          <div id="tDetailBody" class="space-y-2 whitespace-pre-wrap leading-relaxed text-[#1e293b]"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-4 right-4 z-50 px-4 py-2 rounded-xl bg-[#2d2a26] text-white text-xs font-bold shadow-lg hidden"></div>
+
+  <script>
+    // ====== GitHub Pages & Google Sheet 後端設定 ======
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbw7XYqnJEzs6ojEg3o67Y9BRNkSwV63G-yIN8FoPh9rfzPSTTFEVggFvbrGh19QtWSw/exec'; // 部署 Code.gs 後，將 https://script.google.com/macros/s/.../exec 貼入此處
+    const TEACHER_PIN = 'jcmkec2026';
+    // ==================================================
+
+    const state = {
+      shadowMode: false, studentClass: '', studentName: '', grade: '小六', vibe: 'panda', aiMode: 'poe',
+      poeKey: 'sk-poe-Hzwb134lJ_m-6gCxWRY-VtFW6c9tpLuYns6HyPP0xpo',
+      poeModel: 'GPT-4o-mini', gasUrl: DEFAULT_GAS_URL,
+      xp: 10, maxStage: 1, currentStage: 1,
+      equipped: { school: [], exp: [] },
+      scannedImageDataUrl: '',
+      draftBefore: '', introScore: null, discussScore: null,
+      discussTopic: '你認為創新科技對小學生學習有甚麼影響？ / How does innovative tech affect primary learning?',
+      discussLang: '', discussTurns: [], discussHistory: [], qaList: [], voices: []
+    };
+
+    // Load natural, gentle, clear voices
+    function loadVoices() {
+      if (window.speechSynthesis) state.voices = window.speechSynthesis.getVoices();
+    }
+    loadVoices();
+    if (window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function pickBestVoice(isEn) {
+      const vs = state.voices.length ? state.voices : (window.speechSynthesis ? window.speechSynthesis.getVoices() : []);
+      if (isEn) {
+        const preferred = ['Samantha', 'Google US English', 'Google UK English Female', 'Karen', 'Jenny', 'Aria', 'Ava', 'Daniel'];
+        for (const name of preferred) {
+          const found = vs.find(v => v.name.includes(name));
+          if (found) return found;
+        }
+        return vs.find(v => v.lang.startsWith('en') && !/Zarvox|Trinoids|Whisper|Albert|Bad|Bells|Boing|Bubbles|Cellos/i.test(v.name)) || null;
+      } else {
+        const preferred = ['Sin-ji', 'Sinji', 'Google 粵語', 'Tracy', 'HiuGaai'];
+        for (const name of preferred) {
+          const found = vs.find(v => v.name.includes(name));
+          if (found) return found;
+        }
+        return vs.find(v => v.lang === 'zh-HK' || v.lang === 'zh-TW') || null;
+      }
+    }
+
+    function speakText(text, isEn) {
+      if (!window.speechSynthesis) { toast('⚠️ 此裝置不支援語音朗讀'); return; }
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      const best = pickBestVoice(isEn);
+      if (best) u.voice = best;
+      u.lang = isEn ? 'en-US' : 'zh-HK';
+      u.volume = 1.0;
+      u.pitch = 1.05;
+      u.rate = isEn ? 0.9 : 0.95;
+      window.speechSynthesis.speak(u);
+    }
+
+    function cleanMarkdownText(raw) {
+      return (raw || '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/?[^>]+(>|$)/g, '')
+        .replace(/\*\*/g, '')
+        .replace(/#{1,6}\s?/g, '')
+        .trim();
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2300);
+    }
+
+    function gainXP(pts) {
+      state.xp = Math.min(100, state.xp + pts);
+      document.getElementById('lvlNum').textContent = Math.floor(state.xp / 25) + 1;
+      document.getElementById('xpBar').style.width = state.xp + '%';
+      document.getElementById('xpText').textContent = state.xp + ' / 100 XP';
+      document.getElementById('vXp').textContent = state.xp + ' / 100 XP';
+    }
+
+    function goStage(n) {
+      state.currentStage = n;
+      if (n > state.maxStage) state.maxStage = n;
+      document.querySelectorAll('.stage-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('stage-' + n).classList.remove('hidden');
+      document.querySelectorAll('.stage-btn').forEach(b => {
+        const s = Number(b.dataset.stage);
+        b.classList.remove('stage-active', 'stage-done', 'stage-lock');
+        if (s === n) b.classList.add('stage-active');
+        else if (s < n || s <= state.maxStage) b.classList.add('stage-done');
+        else b.classList.add('stage-lock');
+      });
+    }
+    function syncStudentIdentity() {
+      const c = document.getElementById('rClass').value.trim();
+      const n = document.getElementById('rName').value.trim();
+      state.studentClass = c;
+      state.studentName = n;
+      document.getElementById('hudStudentBadge').textContent = (c || n) ? ('👤 ' + (c || '—') + ' · ' + (n || '—')) : '👤 未填班別姓名';
+      const vInfo = document.getElementById('victoryStudentInfo');
+      if (vInfo) vInfo.textContent = `班別：${c || '—'} ｜ 姓名：${n || '—'} ｜ 目標中學：${getTargetSchool()}`;
+    }
+    document.getElementById('rClass').addEventListener('input', syncStudentIdentity);
+    document.getElementById('rName').addEventListener('input', syncStudentIdentity);
+
+    function requireStudentIdentity() {
+      syncStudentIdentity();
+      if (!state.studentClass) {
+        toast('⚠️ 請先輸入「班別」！（例如：6A）');
+        document.getElementById('rClass').focus();
+        return false;
+      }
+      if (!state.studentName) {
+        toast('⚠️ 請先輸入「學生姓名」！');
+        document.getElementById('rName').focus();
+        return false;
+      }
+      return true;
+    }
+
+    document.querySelectorAll('.stage-btn').forEach(b => b.addEventListener('click', () => {
+      const targetStage = Number(b.dataset.stage);
+      if (targetStage > 1 && !requireStudentIdentity()) return;
+      if (targetStage === 5) syncStudentIdentity();
+      goStage(targetStage);
+    }));
+
+    function startVoiceRec(onText, langCode) {
+      saveWorkshopState();
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { toast('⚠️ 此瀏覽器不支援語音識別，請改用鍵盤輸入'); return; }
+      try {
+        const rec = new SR();
+        rec.lang = langCode || (state.currentStage === 4 && state.discussLang === 'en' ? 'en-US' : 'zh-HK');
+        rec.interimResults = false;
+        rec.maxAlternatives = 1;
+        rec.onresult = ev => {
+          const t = ev.results?.[0]?.[0]?.transcript || '';
+          if (t) { onText(t); saveWorkshopState(); }
+        };
+        rec.onerror = ev => {
+          if (ev.error === 'not-allowed') toast('⚠️ 請允許麥克風權限後再按一次 🎤（進度已自動保存）');
+          else toast('⚠️ 語音識別中斷（' + ev.error + '），請再試一次');
+        };
+        rec.start();
+        toast('🎤 正在聆聽語音... Listening...');
+      } catch (e) {
+        toast('⚠️ 無法啟動語音：' + e.message);
+      }
+    }
+
+    // Coach Vibe
+    document.querySelectorAll('.vibe-card').forEach(c => {
+      c.addEventListener('click', () => {
+        state.vibe = c.dataset.vibe;
+        document.querySelectorAll('.vibe-card').forEach(x => x.classList.remove('vibe-selected-lion', 'vibe-selected-panda', 'vibe-selected-owl'));
+        c.classList.add('vibe-selected-' + state.vibe);
+        document.getElementById('hudCoachIcon').textContent = state.vibe === 'lion' ? '🦁' : state.vibe === 'owl' ? '🦉' : '🐼';
+      });
+    });
+
+    // School Preset (Only 毅智 or 其他)
+    const schoolPreset = document.getElementById('schoolPreset');
+    const customSchoolInp = document.getElementById('rTargetCustom');
+    schoolPreset.addEventListener('change', () => customSchoolInp.classList.toggle('hidden', schoolPreset.value !== 'CUSTOM'));
+    function getTargetSchool() { return schoolPreset.value === 'CUSTOM' ? (customSchoolInp.value.trim() || '心儀中學') : schoolPreset.value; }
+
+    // Settings Modal
+    const modal = document.getElementById('settingsModal');
+    const aiModeSel = document.getElementById('aiModeSelect');
+    document.getElementById('openSettingsBtn').addEventListener('click', () => { modal.classList.remove('hidden'); modal.classList.add('flex'); });
+    document.getElementById('closeSettingsBtn').addEventListener('click', () => { modal.classList.add('hidden'); modal.classList.remove('flex'); });
+    aiModeSel.addEventListener('change', () => document.getElementById('poeConfigBox').classList.toggle('hidden', aiModeSel.value !== 'poe'));
+
+    document.getElementById('testApiBtn').addEventListener('click', async () => {
+      const resEl = document.getElementById('apiTestResult');
+      resEl.classList.remove('hidden'); resEl.textContent = '⏳ 測試中...';
+      try {
+        const k = document.getElementById('poeKeyInput').value.trim();
+        const m = document.getElementById('poeModelSelect').value;
+        const r = await fetch('https://api.poe.com/v1/chat/completions', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + k },
+          body: JSON.stringify({ model: m, messages: [{ role: 'user', content: 'Hi' }], max_tokens: 10 })
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        resEl.className = 'text-[11px] font-bold text-emerald-700';
+        resEl.textContent = `✅ ${m} 連線成功！`;
+      } catch (e) {
+        resEl.className = 'text-[11px] font-bold text-rose-600';
+        resEl.textContent = '❌ 失敗：' + e.message;
+      }
+    });
+
+    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+      state.aiMode = aiModeSel.value;
+      state.poeKey = document.getElementById('poeKeyInput').value.trim();
+      state.poeModel = document.getElementById('poeModelSelect').value;
+      state.gasUrl = document.getElementById('gasUrlInput').value.trim();
+      document.getElementById('engineLabel').textContent = state.aiMode === 'poe' ? 'Poe 極速連線' : '免Key模式';
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+      toast('⚙️ 設定已儲存');
+    });
+
+    // Equip Chips
+    document.querySelectorAll('.equip-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const g = btn.dataset.group, v = btn.dataset.val, arr = state.equipped[g];
+        const idx = arr.indexOf(v);
+        if (idx === -1) { arr.push(v); btn.classList.add('bg-[#c8956c]', 'text-white', 'border-[#c8956c]'); }
+        else { arr.splice(idx, 1); btn.classList.remove('bg-[#c8956c]', 'text-white', 'border-[#c8956c]'); }
+      });
+    });
+
+    document.getElementById('demo1Btn').addEventListener('click', () => {
+      document.getElementById('rClass').value = '6A';
+      document.getElementById('rName').value = '陳一心 (Anson)';
+      state.equipped = { school: ['全人教育 Holistic Education', 'STEAM 創科教育'], exp: ['步操管樂團 Wind Band', 'STEM 與無人機 Drone Club'] };
+      document.querySelectorAll('.equip-chip').forEach(b => {
+        const active = state.equipped[b.dataset.group].includes(b.dataset.val);
+        b.classList.toggle('bg-[#c8956c]', active); b.classList.toggle('text-white', active); b.classList.toggle('border-[#c8956c]', active);
+      });
+      syncStudentIdentity(); toast('✨ 已填入示範 / Demo filled');
+    });
+
+    document.getElementById('toStage2Btn').addEventListener('click', () => {
+      if (!requireStudentIdentity()) return;
+      const targetBlank = document.querySelector('[data-k="target"]');
+      if (targetBlank) targetBlank.value = getTargetSchool();
+      const nameBlank = document.querySelector('[data-k="name"]');
+      if (nameBlank && document.getElementById('rName').value.trim()) nameBlank.value = document.getElementById('rName').value.trim();
+      gainXP(20); goStage(2); syncToGoogleSheet();
+    });
+
+    // Micro-Step Hints (小步子提示)
+    const microHints = {
+      1: `<div class="font-bold text-[#a6744c]">💡 Step 1：先寫 1 句打招呼＋姓名＋小學 / Greeting & Name</div>
+          <div>• 中文：各位老師好！我叫＿＿，就讀東華三院姚達之紀念小學（元朗）。</div>
+          <div>• English：<em>Good morning, teachers! My name is ___, from TWGHs Yiu Dak Chi Memorial Primary School.</em></div>`,
+      2: `<div class="font-bold text-[#a6744c]">💡 Step 2：講 1 個目標學校吸引你的特色 / School Focus</div>
+          <div>• 中文：我很想入讀${getTargetSchool()}，因為學校重視＿＿。</div>
+          <div>• English：<em>I want to join ${getTargetSchool()} because it focuses on holistic education / STEAM.</em></div>`,
+      3: `<div class="font-bold text-[#a6744c]">💡 Step 3：用「活動＋學到」講個人經歷 / Experience</div>
+          <div>• 中文：我曾參加＿＿，從中學到＿＿（如：堅毅／團隊合作）。</div>
+          <div>• English：<em>I joined ___ and learned perseverance / collaboration.</em></div>`,
+      4: `<div class="font-bold text-[#a6744c]">💡 Step 4：講 1 句未來目標＋禮貌道謝 / Goal & Closing</div>
+          <div>• 中文：希望將來能貢獻學校，謝謝各位老師！</div>
+          <div>• English：<em>I hope to grow and contribute to your school. Thank you!</em></div>`
+    };
+    document.querySelectorAll('.micro-step-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.micro-step-btn').forEach(b => {
+          b.className = 'micro-step-btn px-3 py-2 rounded-xl bg-white border border-[#e6e0d8] text-xs font-bold text-[#756e65] cursor-pointer';
+        });
+        btn.className = 'micro-step-btn px-3 py-2 rounded-xl bg-white border-2 border-[#c8956c] text-xs font-bold text-[#2d2a26] cursor-pointer';
+        document.getElementById('microHintBox').innerHTML = microHints[btn.dataset.step];
+      });
+    });
+
+    async function callRemoteAI(promptText, imageUrl, maxTokens = 280) {
+      if (state.aiMode !== 'poe' || !state.poeKey) return null;
+      const content = imageUrl ? [{ type: 'text', text: promptText }, { type: 'image_url', image_url: { url: imageUrl } }] : promptText;
+      const res = await fetch('https://api.poe.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.poeKey}` },
+        body: JSON.stringify({ model: state.poeModel, messages: [{ role: 'user', content }], max_tokens: maxTokens, temperature: 0.6 })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || '';
+    }
+
+    // Stage 2: Scaffold, OCR, Grade
+    document.getElementById('toggleScaffoldBtn').addEventListener('click', () => document.getElementById('scaffoldCard').classList.toggle('hidden'));
+    const introInput = document.getElementById('introInput');
+    function updateWC() {
+      const txt = introInput.value.trim();
+      const isEn = /[a-zA-Z]{3,}/.test(txt);
+      document.getElementById('wordCountBadge').textContent = isEn ? `${txt ? txt.split(/\s+/).length : 0} words` : `${txt.replace(/\s+/g, '').length} 字`;
+    }
+    introInput.addEventListener('input', updateWC);
+
+    document.getElementById('applyScaffoldBtn').addEventListener('click', () => {
+      const getK = k => document.querySelector(`[data-k="${k}"]`).value.trim() || '___';
+      introInput.value = `${getK('greet')}, teachers! My name is ${getK('name')} from ${getK('cur')}. I want to join ${getK('target')} because it focuses on ${getK('focus')}. I joined ${getK('exp')} and learned ${getK('learn')}. Thank you!`;
+      updateWC();
+    });
+
+    async function runAutoOCR() {
+      if (!state.scannedImageDataUrl) return;
+      const lbl = document.getElementById('ocrStatusLabel');
+      lbl.textContent = '⏳ AI 正在快速識字...';
+      try {
+        const text = await callRemoteAI('請只輸出圖片中的手寫文字原文，不要加任何解釋。', state.scannedImageDataUrl, 250);
+        if (text) {
+          introInput.value = cleanMarkdownText(text);
+          updateWC();
+          lbl.textContent = '✅ 識字完成 / OCR Done';
+          toast('✅ 已自動識別手寫文字！');
+          return;
+        }
+      } catch (e) {
+        lbl.textContent = '⚠️ 識字失敗，請用語音或手動輸入';
+      }
+    }
+
+    document.getElementById('scanFileInput').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        state.scannedImageDataUrl = ev.target.result;
+        document.getElementById('scanPreviewImg').src = state.scannedImageDataUrl;
+        document.getElementById('scanPreviewWrap').classList.remove('hidden');
+        runAutoOCR();
+      };
+      reader.readAsDataURL(file);
+    });
+    document.getElementById('clearScanBtn').addEventListener('click', () => {
+      state.scannedImageDataUrl = '';
+      document.getElementById('scanPreviewWrap').classList.add('hidden');
+      document.getElementById('scanFileInput').value = '';
+    });
+
+    document.getElementById('ttsIntroBtn').addEventListener('click', () => {
+      const txt = introInput.value.trim();
+      if (!txt) { toast('⚠️ 請先輸入講稿'); return; }
+      speakText(txt, /[a-zA-Z]{4,}/.test(txt));
+    });
+    document.getElementById('voiceInputBtn').addEventListener('click', () => {
+      startVoiceRec(t => { introInput.value += (introInput.value ? ' ' : '') + t; updateWC(); });
+    });
+
+    document.getElementById('lockBeforeBtn').addEventListener('click', () => {
+      if (!introInput.value.trim()) { toast('⚠️ 請先輸入初稿'); return; }
+      state.draftBefore = introInput.value.trim();
+      document.getElementById('beforeText').textContent = state.draftBefore;
+      document.getElementById('afterText').textContent = state.draftBefore;
+      document.getElementById('compareBox').classList.remove('hidden');
+      toast('📌 已記錄初稿');
+    });
+
+    document.getElementById('gradeIntroBtn').addEventListener('click', async () => {
+      const txt = introInput.value.trim();
+      if (!txt && !state.scannedImageDataUrl) { toast('⚠️ 請先拍照或輸入講稿'); return; }
+      if (state.draftBefore && txt) document.getElementById('afterText').textContent = txt;
+
+      if (state.aiMode === 'poe') {
+        document.getElementById('introFeedback').textContent = '⏳ 極速批改中...';
+        try {
+          const reply = await callRemoteAI(`你是毅老師，用中英對照精簡點列批改以下${state.grade}自我介紹（禁止使用markdown星號或HTML標籤，總字數<=120字）：\n1.錯字 Typos：\n2.評分 Score (1-5)：\n3.引導問題 Questions：\n4.可用詞彙 Vocab：\n講稿：${txt}`, state.scannedImageDataUrl, 240);
+          if (reply) {
+            document.getElementById('introFeedback').innerHTML = `<div class="whitespace-pre-wrap">${cleanMarkdownText(reply)}</div>`;
+            const scMatch = cleanMarkdownText(reply).match(/([1-5])\s*\/\s*5|([1-5])\s*分/);
+            if (scMatch) {
+              state.introScore = Number(scMatch[1] || scMatch[2]);
+              document.getElementById('vIntro').textContent = state.introScore + ' / 5 分';
+            }
+            document.getElementById('introScorePill').textContent = state.introScore ? (state.introScore + ' / 5 分') : 'AI 已批改';
+            syncToGoogleSheet();
+            gainXP(25); return;
+          }
+        } catch (e) {}
+      }
+      document.getElementById('introFeedback').textContent = '📊 品等：3 / 5 分 (尚可)\n• 建議補充比賽遇到的困難與學到的品格。';
+      gainXP(25);
+    });
+
+    document.getElementById('toStage3Btn').addEventListener('click', () => goStage(3));
+
+    // Stage 3: Bilingual Mock Interview
+    let timerId = null;
+    document.getElementById('timerBtn').addEventListener('click', () => {
+      if (timerId) { clearInterval(timerId); timerId = null; }
+      let sec = 60;
+      document.getElementById('timerVal').textContent = sec;
+      timerId = setInterval(() => {
+        sec--; document.getElementById('timerVal').textContent = sec;
+        if (sec <= 0) { clearInterval(timerId); timerId = null; toast('⏰ 60秒時間到！Time is up!'); }
+      }, 1000);
+    });
+
+    function renderQACards(items) {
+      state.qaList = items;
+      document.getElementById('qaCards').innerHTML = items.map((item, idx) => `
+        <div class="p-4 rounded-2xl bg-[#faf6f0] border border-[#e6e0d8] space-y-2.5">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <div class="text-sm font-black text-[#2d2a26]">${idx + 1}. ${item.zh}</div>
+              <div class="text-xs font-bold text-[#a6744c] mt-0.5">${item.en}</div>
+            </div>
+            <div class="flex gap-1.5">
+              <button type="button" class="qa-tts px-2.5 py-1 rounded-lg bg-white border border-[#e6e0d8] text-xs font-bold cursor-pointer" data-txt="${item.zh}" data-en="0">🔊 粵語</button>
+              <button type="button" class="qa-tts px-2.5 py-1 rounded-lg bg-white border border-[#e6e0d8] text-xs font-bold cursor-pointer" data-txt="${item.en}" data-en="1">🔊 English</button>
+            </div>
+          </div>
+          <div class="text-xs bg-white p-2.5 rounded-xl border border-[#e6e0d8] text-[#756e65]">
+            💡 <strong>小步子準備方向 / Tip：</strong>${item.tip}
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-[#2d2a26]">📝 我的準備草稿區 / Prep & Draft：</span>
+              <button type="button" class="qa-voice px-2.5 py-1 rounded-lg bg-white border border-[#e6e0d8] text-xs font-bold cursor-pointer" data-idx="${idx}">🎤 語音試答</button>
+            </div>
+            <textarea id="qaAns-${idx}" rows="2" placeholder="寫下關鍵詞或試答句子... / Write key points or speak..." class="w-full p-2.5 rounded-xl bg-white border border-[#e6e0d8] text-xs focus:border-[#c8956c] focus:outline-none"></textarea>
+            <div class="flex justify-end">
+              <button type="button" class="qa-eval px-3.5 py-1.5 rounded-xl bg-[#c8956c] text-white text-xs font-bold cursor-pointer" data-idx="${idx}">🤖 AI 點評 / Check Answer</button>
+            </div>
+            <div id="qaFb-${idx}" class="hidden p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 whitespace-pre-wrap"></div>
+          </div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.qa-tts').forEach(b => b.addEventListener('click', () => speakText(b.dataset.txt, b.dataset.en === '1')));
+      document.querySelectorAll('.qa-voice').forEach(b => b.addEventListener('click', () => {
+        const inp = document.getElementById('qaAns-' + b.dataset.idx);
+        startVoiceRec(t => { inp.value += (inp.value ? ' ' : '') + t; });
+      }));
+      document.querySelectorAll('.qa-eval').forEach(b => b.addEventListener('click', async () => {
+        const i = b.dataset.idx, ans = document.getElementById('qaAns-' + i).value.trim(), fb = document.getElementById('qaFb-' + i);
+        if (!ans) { toast('⚠️ 請先輸入或語音試答'); return; }
+        fb.classList.remove('hidden'); fb.textContent = '⏳ 教練點評中...';
+        try {
+          const reply = await callRemoteAI(`題目：${state.qaList[i].zh} / ${state.qaList[i].en}\n回答：${ans}\n用中英對照精簡點評（<=70字，不要用星號或HTML標籤）：1.優點；2.改進建議。`, '', 180);
+          if (reply) { fb.textContent = cleanMarkdownText(reply); gainXP(10); return; }
+        } catch (e) {}
+        fb.textContent = '👍 回應切題！建議加一個具體例子會更出色。';
+      }));
+    }
+
+    document.getElementById('genQABtn').addEventListener('click', async () => {
+      const target = getTargetSchool();
+      const sch = state.equipped.school.join(', ') || '全人教育 Holistic Education';
+      const exp = state.equipped.exp.join(', ') || '課外活動';
+      document.getElementById('qaCards').innerHTML = '<div class="p-5 rounded-2xl bg-[#f3efe8] text-xs font-bold animate-pulse">⚡ 正在快速生成 3 條中英對照面試題...</div>';
+
+      if (state.aiMode === 'poe') {
+        try {
+          const raw = await callRemoteAI(`為報讀「${target}」（特色：${sch}）的小五學生（強項：${exp}）設計 3 條面試題，只輸出純 JSON 陣列：[{"zh":"中文問題","en":"English question","tip":"中英對照答題貼士"}]`, '', 320);
+          const m = raw && raw.match(/\[[\s\S]*\]/);
+          if (m) { renderQACards(JSON.parse(m[0])); gainXP(20); return; }
+        } catch (e) {}
+      }
+
+      renderQACards([
+        { zh: `為甚麼你想入讀${target}？`, en: `Why do you want to study at ${target}?`, tip: `扣連學校特色「${sch}」 / Connect with "${sch}".` },
+        { zh: `在參與「${exp}」時，你遇過甚麼困難？`, en: `What challenge did you face in "${exp}"?`, tip: `用「本來→過程→結果」 / Use "Originally → Process → Result".` },
+        { zh: `如果組員在討論時意見不合，你會怎樣做？`, en: `What will you do if teammates disagree in a discussion?`, tip: `展現聆聽與尊重 / Show active listening & respect.` }
+      ]);
+      gainXP(20);
+    });
+    document.getElementById('toStage4Btn').addEventListener('click', () => goStage(4));
+
+    // Stage 4: Group Discussion (Clean split cards, ZERO <br> or **)
+    function addDiscussMsg(sender, txt, cls) {
+      const box = document.getElementById('discussChat');
+      const d = document.createElement('div'); d.className = `p-3 rounded-xl ${cls}`;
+      const strong = document.createElement('strong');
+      strong.textContent = sender + '：';
+      const body = document.createElement('div');
+      body.className = 'mt-1 whitespace-pre-wrap leading-relaxed';
+      body.textContent = cleanMarkdownText(txt);
+      d.appendChild(strong);
+      d.appendChild(body);
+      box.appendChild(d);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    document.querySelectorAll('.d-lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.discussLang = btn.dataset.lang;
+        document.querySelectorAll('.d-lang-btn').forEach(b => {
+          const active = b.dataset.lang === state.discussLang;
+          b.classList.toggle('bg-[#c8956c]', active);
+          b.classList.toggle('text-white', active);
+          b.classList.toggle('border-[#c8956c]', active);
+          b.classList.toggle('bg-white', !active);
+        });
+        const sel = document.getElementById('discussTopic');
+        const curIdx = sel.selectedIndex >= 0 ? sel.selectedIndex : 0;
+        const topicsZh = [
+          '1. 你認為創新科技對小學生學習有甚麼影響？',
+          '2. 短視頻對學生成長有意義嗎？',
+          '3. 義工服務對小學生學習有意義嗎？'
+        ];
+        const topicsEn = [
+          '1. How does innovative technology affect primary students\' learning?',
+          '2. Are short videos meaningful for students\' growth?',
+          '3. Is volunteering meaningful for primary students\' learning?'
+        ];
+        const list = state.discussLang === 'en' ? topicsEn : topicsZh;
+        Array.from(sel.options).forEach((opt, i) => {
+          opt.value = list[i];
+          opt.textContent = list[i];
+        });
+        sel.selectedIndex = curIdx;
+        state.discussTopic = sel.value;
+        refreshS4LocalHints();
+        toast(state.discussLang === 'en' ? '🇬🇧 Switched to English Discussion!' : '🇭🇰 已選擇中文小組討論！');
+      });
+    });
+
+    document.getElementById('startDiscussBtn').addEventListener('click', () => {
+      if (!state.discussLang) {
+        toast('⚠️ 請先選擇「中文討論」或「English Discussion」！');
+        return;
+      }
+      state.discussTopic = document.getElementById('discussTopic').value;
+      state.discussTurns = []; state.discussHistory = []; document.getElementById('discussChat').innerHTML = '';
+      const msg = state.discussLang === 'en'
+        ? `Topic: ${state.discussTopic}\nPlease share your first view in English using Respond → View → Example → Ask!`
+        : `題目：${state.discussTopic}\n請先自己寫下初步想法（至少 8 字），再用「應認例問」與組員交流！`;
+      addDiscussMsg('🤖 教練 Coach', msg, 'bg-white border border-[#e6e0d8]');
+      refreshS4LocalHints();
+    });
+    document.getElementById('voiceDiscussBtn').addEventListener('click', () => {
+      startVoiceRec(t => { document.getElementById('discussInput').value += t; });
+    });
+
+    function isGibberishOrOffTopic(txt) {
+      const clean = txt.trim();
+      if (!clean) return true;
+      // Pure numbers, punctuation, or symbols (e.g. "123523", "???")
+      if (/^[0-9\s\p{P}\p{S}]+$/u.test(clean)) return true;
+      // Count CJK characters and real English words (2+ letters)
+      const cjkCount = (clean.match(/[\u4e00-\u9fff]/g) || []).length;
+      const enWords = (clean.match(/[a-zA-Z]{2,}/g) || []).length;
+      if (cjkCount < 2 && enWords < 2) return true;
+      // Repeated single character/keyboard mash (e.g. "aaaaaaa", "哈哈哈哈哈")
+      if (/^(.)\1{3,}$/.test(clean.replace(/\s+/g, ''))) return true;
+      return false;
+    }
+
+    async function sendDiscuss() {
+      if (!state.discussLang) {
+        toast('⚠️ 請先在上方選擇「中文討論」或「English Discussion」！');
+        return;
+      }
+      const inp = document.getElementById('discussInput'), msg = inp.value.trim();
+      if (!msg) return;
+      inp.value = '';
+      state.discussTurns.push(msg);
+      state.discussHistory.push({ sender: state.discussLang === 'en' ? 'Student' : '同學', text: msg });
+      const round = state.discussTurns.length;
+      addDiscussMsg('🧑 你 You', msg, 'bg-[#c8956c] text-white ml-6');
+      refreshS4LocalHints();
+
+      const n1 = state.discussLang === 'en' ? 'Xiao Yi' : '小毅';
+      const n2 = state.discussLang === 'en' ? 'Xiao Zhi' : '小智';
+      const n3 = state.discussLang === 'en' ? 'Xiao De' : '小德';
+
+      // Immediate call-out if student types gibberish / random numbers like "123523"
+      if (isGibberishOrOffTopic(msg)) {
+        const r1 = state.discussLang === 'en'
+          ? `Hey! "${msg}" makes no sense at all! Please stay serious and share a real idea on the topic.`
+          : `喂！「${msg}」完全唔知講緊乜喎！請認真啲講返你對題目嘅睇法啦！`;
+        const r2 = state.discussLang === 'en'
+          ? `Yeah, we can't discuss random characters like "${msg}". Try telling us if you agree or disagree first.`
+          : `係呀，你打「${msg}」我哋好難接落去，試下先講你同唔同意題目？`;
+        const r3 = state.discussLang === 'en'
+          ? `Take 10 seconds to think of one simple reason—we are waiting for you!`
+          : `諗 10 秒講個簡單原因，我哋等你認真發言呀！`;
+        state.discussHistory.push({ sender: n1, text: r1 }, { sender: n2, text: r2 }, { sender: n3, text: r3 });
+        addDiscussMsg('🧠 ' + n1, r1, 'bg-rose-50 border border-rose-300 mr-6');
+        addDiscussMsg('🙂 ' + n2, r2, 'bg-amber-50 border border-amber-200 mr-6');
+        addDiscussMsg('📝 ' + n3, r3, 'bg-emerald-50 border border-emerald-200 mr-6');
+        return;
+      }
+
+      if (state.aiMode === 'poe') {
+        try {
+          const hist = state.discussHistory.slice(-10).map(h => `${h.sender}: ${h.text}`).join('\n');
+          const langRule = state.discussLang === 'en'
+            ? 'Reply ONLY in natural, simple Primary 6 English. Use names Xiao Yi, Xiao Zhi, Xiao De.'
+            : 'Reply ONLY in natural Hong Kong Cantonese / Traditional Chinese. Use names 小毅, 小智, 小德.';
+          const prompt = `Topic: ${state.discussTopic}
+Full Group Discussion Transcript so far (Round ${round}):
+${hist}
+Latest student message: "${msg}"
+${langRule}
+STRICT RULES:
+1. OFF-TOPIC / NONSENSE CHECK: If the latest student message "${msg}" is off-topic, nonsensical, or trolling, all 3 peers MUST directly point out "${msg}" and tell the student to get back on topic!
+2. DIRECT RELEVANCE: Otherwise, all 3 peers MUST directly quote/address the specific point in "${msg}" AND connect to what Xiao Yi / Xiao Zhi / Xiao De said earlier. Never give generic canned replies.
+Strictly output 3 lines (no asterisks, no HTML):
+${state.discussLang === 'en' ? 'Xiao Yi: (directly addresses student message + builds on/challenges earlier peer point, <=24 words)\nXiao Zhi: (reacts to student message + Xiao Yi with a concrete example, <=24 words)\nXiao De: (synthesizes the thread and asks a focused follow-up, <=20 words)' : '小毅：（直接針對同學剛才講的具體內容，並承接上一輪組員發言提出追問，約24字）\n小智：（回應同學剛才的話與小毅的觀點，舉出相連新例子，約24字）\n小德：（串連大家的討論脈絡，提出下一步思考問題，約20字）'}`;
+          const reply = await callRemoteAI(prompt, '', 260);
+          if (reply) {
+            const lines = cleanMarkdownText(reply).split('\n').map(l => l.trim()).filter(Boolean);
+            lines.forEach(line => {
+              if (/^(小毅|Xiao Yi)/i.test(line)) {
+                const txt = line.replace(/^(小毅|Xiao Yi)[:：]?\s*/i, '');
+                state.discussHistory.push({ sender: n1, text: txt });
+                addDiscussMsg('🧠 ' + n1, txt, 'bg-blue-50 border border-blue-200 mr-6');
+              } else if (/^(小智|Xiao Zhi)/i.test(line)) {
+                const txt = line.replace(/^(小智|Xiao Zhi)[:：]?\s*/i, '');
+                state.discussHistory.push({ sender: n2, text: txt });
+                addDiscussMsg('🙂 ' + n2, txt, 'bg-amber-50 border border-amber-200 mr-6');
+              } else if (/^(小德|Xiao De)/i.test(line)) {
+                const txt = line.replace(/^(小德|Xiao De)[:：]?\s*/i, '');
+                state.discussHistory.push({ sender: n3, text: txt });
+                addDiscussMsg('📝 ' + n3, txt, 'bg-emerald-50 border border-emerald-200 mr-6');
+              } else {
+                addDiscussMsg('👥 Peer', line, 'bg-white border border-[#e6e0d8] mr-6');
+              }
+            });
+            return;
+          }
+        } catch (e) {}
+      }
+
+      // Context-quoting offline fallback so even offline replies directly reference what the student wrote
+      const shortQuote = msg.slice(0, 12) + (msg.length > 12 ? '...' : '');
+      const zhPools = [
+        [
+          `你提到「${shortQuote}」，不過會唔會有人因此懶得自己思考？`,
+          `回應你講「${shortQuote}」，我上次用平板做科學專題搵圖表好快！`,
+          `將你講嘅方法同小智嘅例子結合，其實要靠自律先得。`
+        ],
+        [
+          `承接剛才講「${shortQuote}」，如果屋企冇大人睇住，會唔會易分心？`,
+          `係呀，好似小毅話會分心，我試過睇片睇到唔記得時間！`,
+          `大家覺得每日限制幾多分鐘先最合適呢？`
+        ],
+        [
+          `除了剛才講嘅重點，我哋仲要留意溝通能力會唔會變弱。`,
+          `同意小毅！所以我平時都會同同學面對面討論功課。`,
+          `總括嚟講，善用工具而唔係代替自己思考，先係最好。`
+        ]
+      ];
+      const enPools = [
+        [
+          `Regarding "${shortQuote}", could some students stop thinking on their own?`,
+          `About "${shortQuote}", I used a tablet for science and found charts super fast!`,
+          `Combining your point with Xiao Zhi's example, self-discipline is the key.`
+        ],
+        [
+          `Following up on "${shortQuote}", what if nobody supervises us at home?`,
+          `True! Just like Xiao Yi warned, I once got distracted watching clips too long.`,
+          `How many minutes a day do you think is healthiest for P6 students?`
+        ],
+        [
+          `Besides that point, we should also care about our face-to-face speaking skills.`,
+          `I agree with Xiao Yi! That is why I still love discussing projects in person.`,
+          `Using tools to support our own ideas is the smartest way.`
+        ]
+      ];
+      const pool = (state.discussLang === 'en' ? enPools : zhPools)[(round - 1) % 3];
+      state.discussHistory.push({ sender: n1, text: pool[0] }, { sender: n2, text: pool[1] }, { sender: n3, text: pool[2] });
+      addDiscussMsg('🧠 ' + n1, pool[0], 'bg-blue-50 border border-blue-200 mr-6');
+      addDiscussMsg('🙂 ' + n2, pool[1], 'bg-amber-50 border border-amber-200 mr-6');
+      addDiscussMsg('📝 ' + n3, pool[2], 'bg-emerald-50 border border-emerald-200 mr-6');
+    }
+    document.getElementById('sendDiscussBtn').addEventListener('click', sendDiscuss);
+    document.getElementById('discussInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendDiscuss(); });
+
+    document.getElementById('evalDiscussBtn').addEventListener('click', async () => {
+      if (!state.discussTurns.length) { toast('⚠️ 請先發言至少 1 次'); return; }
+      const box = document.getElementById('discussEvalBox');
+      if (state.aiMode === 'poe') {
+        box.textContent = '⏳ 正在快速評分...';
+        try {
+          const reply = await callRemoteAI(`以中英對照簡評以下討論發言（內容1-5分、互動1-5分，禁止使用星號或HTML標籤，<=90字）：\n${state.discussTurns.join('\n')}`, '', 180);
+          if (reply) {
+            box.textContent = cleanMarkdownText(reply);
+            state.discussScore = 'AI 已評級'; syncToGoogleSheet();
+            document.getElementById('vDiscuss').textContent = 'AI 已評級';
+            gainXP(25); return;
+          }
+        } catch (e) {}
+      }
+      box.textContent = '🏆 總評級 Grade：佳 (B+)\n• 內容與互動表現良好，記得反問組員意見！\n• Good content & interaction! Remember to ask peers for their views.';
+      gainXP(25);
+    });
+
+    document.getElementById('toStage5Btn').addEventListener('click', () => { syncStudentIdentity(); goStage(5); });
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+    function collectAllStudentWork() {
+      syncStudentIdentity();
+      const introDraft = document.getElementById('introInput').value.trim();
+      const introFb = document.getElementById('introFeedback').innerText.trim();
+      const qaItems = [];
+      document.querySelectorAll('#qaCards > div').forEach((card, i) => {
+        const q = card.querySelector('.font-black')?.innerText || ('Question ' + (i+1));
+        const ans = card.querySelector('textarea')?.value.trim() || '';
+        const fb = card.querySelector('[id^="qa-fb-"]')?.innerText.trim() || '';
+        qaItems.push({ q, ans, fb });
+      });
+      const discussLog = document.getElementById('discussChat').innerText.trim();
+      const discussEval = document.getElementById('discussEvalBox').innerText.trim();
+      return {
+        studentClass: state.studentClass || '未填班別',
+        studentName: state.studentName || '未填姓名',
+        targetSchool: getTargetSchool(),
+        schoolFocus: [...state.equipped.school, document.getElementById('customSchoolNote').value.trim()].filter(Boolean).join('、') || '—',
+        exp: [...state.equipped.exp, document.getElementById('customExpNote').value.trim()].filter(Boolean).join('、') || '—',
+        draftBefore: state.draftBefore || '（未記錄）',
+        introDraft: introDraft || '（尚未填寫）',
+        introScore: state.introScore ? (state.introScore + ' / 5 分') : '尚未評分',
+        introFb: introFb || '（尚未批改）',
+        qaItems,
+        discussTopic: state.discussTopic,
+        discussLog: discussLog || '（尚未討論）',
+        discussEval,
+        xp: state.xp + ' / 100 XP',
+        timestamp: new Date().toLocaleString('zh-HK')
+      };
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    }
+
+    document.getElementById('exportHtmlBtn').addEventListener('click', () => {
+      if (!requireStudentIdentity()) return;
+      const d = collectAllStudentWork();
+      const qaHtml = d.qaItems.length
+        ? d.qaItems.map((it, idx) => `<div class="box"><strong>Q${idx+1}：${escHtml(it.q)}</strong><p><b>學生回答：</b>${escHtml(it.ans || '（未填寫）')}</p><p><b>AI 評語：</b>${escHtml(it.fb || '（未評分）')}</p></div>`).join('')
+        : '<p>（尚未進行模擬面試）</p>';
+      const reportDoc = `<!DOCTYPE html><html lang="zh-HK"><head><meta charset="UTF-8"><title>${d.studentClass}_${d.studentName}_AI面試成品</title>
+<style>body{font-family:"Noto Sans TC",sans-serif;max-width:820px;margin:28px auto;padding:0 18px;color:#222;line-height:1.65;}
+h1{color:#a6744c;border-bottom:3px solid #c8956c;padding-bottom:8px;}h2{color:#007a58;margin-top:24px;}
+.meta{background:#faf6f0;padding:14px;border-radius:10px;border:1px solid #e6e0d8;}
+.box{background:#f8fafc;padding:12px 14px;border-radius:10px;border:1px solid #e2e8f0;margin:10px 0;}
+</style></head><body>
+<h1>🎓 升中面試 AI 工作坊｜學生學習成品報告</h1>
+<div class="meta">
+  <p><b>班別：</b>${escHtml(d.studentClass)}　｜　<b>學生姓名：</b>${escHtml(d.studentName)}　｜　<b>累積經驗：</b>${escHtml(d.xp)}</p>
+  <p><b>目標中學：</b>${escHtml(d.targetSchool)}　｜　<b>學校特色：</b>${escHtml(d.schoolFocus)}</p>
+  <p><b>個人經歷與強項：</b>${escHtml(d.exp)}　｜　<b>匯出時間：</b>${escHtml(d.timestamp)}</p>
+</div>
+<h2>1. 個人簡介（自介初稿與 AI 批改）</h2>
+<div class="box"><p><b>修改前初稿：</b><br>${escHtml(d.draftBefore)}</p><p><b>最終定稿：</b><br>${escHtml(d.introDraft)}</p><p><b>AI 量表評分：</b>${escHtml(d.introScore)}</p><p><b>AI 批改建議：</b><br>${escHtml(d.introFb)}</p></div>
+<h2>2. 模擬面試問答紀錄</h2>${qaHtml}
+<h2>3. AI 小組討論紀錄與評價</h2>
+<div class="box"><p><b>討論題目：</b>${escHtml(d.discussTopic)}</p><p><b>對話紀錄：</b><br>${escHtml(d.discussLog)}</p><p><b>毅老師討論評價：</b><br>${escHtml(d.discussEval)}</p></div>
+</body></html>`;
+      const blob = new Blob([reportDoc], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${d.studentClass}_${d.studentName}_AI面試成品.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('✅ 已匯出成品檔案：' + a.download);
+    });
+
+    document.getElementById('copySummaryBtn').addEventListener('click', async () => {
+      if (!requireStudentIdentity()) return;
+      const d = collectAllStudentWork();
+      const txt = `【升中面試 AI 工作坊成品】\n班別：${d.studentClass}｜姓名：${d.studentName}\n目標中學：${d.targetSchool}\n自介評分：${d.introScore}\n自介定稿：\n${d.introDraft}\n\n討論評價：\n${d.discussEval}`;
+      try {
+        await navigator.clipboard.writeText(txt);
+        toast('📋 已複製文字總結！');
+      } catch (e) {
+        toast('⚠️ 無法自動複製，請使用「匯出成品檔案」');
+      }
+    });
+
+    // Shadow Mode (JCMKEC Briefing Trial - Client-side sessionStorage only, zero Drive upload)
+    function toggleShadowMode(forceOn) {
+      state.shadowMode = typeof forceOn === 'boolean' ? forceOn : !state.shadowMode;
+      const btn = document.getElementById('shadowModeBtn');
+      const statusTxt = document.getElementById('shadowStatusText');
+      const banner = document.getElementById('shadowBanner');
+      if (state.shadowMode) {
+        statusTxt.textContent = '開 ON';
+        btn.classList.remove('bg-purple-50', 'text-purple-800', 'border-purple-200');
+        btn.classList.add('bg-purple-700', 'text-white', 'border-purple-700');
+        banner.classList.remove('hidden');
+        if (!document.getElementById('rClass').value.trim()) document.getElementById('rClass').value = 'Shadow試用';
+        if (!document.getElementById('rName').value.trim()) document.getElementById('rName').value = '老師／小導師';
+        syncStudentIdentity();
+        try { sessionStorage.setItem('jcmkec_shadow_active', '1'); } catch (e) {}
+        toast('👻 已開啟 Shadow 試用模式：資料只暫存用戶端，不上存 Drive');
+      } else {
+        statusTxt.textContent = '關 OFF';
+        btn.classList.add('bg-purple-50', 'text-purple-800', 'border-purple-200');
+        btn.classList.remove('bg-purple-700', 'text-white', 'border-purple-700');
+        banner.classList.add('hidden');
+        try { sessionStorage.removeItem('jcmkec_shadow_active'); } catch (e) {}
+        toast('已關閉 Shadow 試用模式');
+      }
+    }
+    document.getElementById('shadowModeBtn').addEventListener('click', () => toggleShadowMode());
+    document.getElementById('clearShadowBtn').addEventListener('click', () => {
+      try { sessionStorage.clear(); } catch (e) {}
+      document.getElementById('rClass').value = state.shadowMode ? 'Shadow試用' : '';
+      document.getElementById('rName').value = state.shadowMode ? '老師／小導師' : '';
+      document.getElementById('introInput').value = '';
+      document.getElementById('introFeedback').innerHTML = '';
+      document.getElementById('qaCards').innerHTML = '';
+      document.getElementById('discussChat').innerHTML = '';
+      document.getElementById('discussEvalBox').textContent = '完成發言後按「📊 討論評價 / Evaluate」取得評分！';
+      state.draftBefore = ''; state.introScore = null; state.discussScore = null; state.discussTurns = []; state.qaList = [];
+      syncStudentIdentity();
+      goStage(1);
+      toast('🗑️ 已清除所有用戶端暫存資料！');
+    });
+
+    // Context-Aware Picture-Guided Scaffolding (Stage 3 & Stage 4)
+    let activeQaIdx = 0;
+    let activeQaInput = null;
+    let s4CustomSnippets = { respond: '', view: '', example: '', ask: '' };
+    let lastAiPeerSnippet = '';
+
+    const MIN_THINK_CHARS = 8;
+
+    function buildSmartS3Hints(idx) {
+      const item = state.qaList[idx];
+      if (!item) return;
+      const curInput = (document.getElementById('qaAns-' + idx)?.value || '').trim();
+      const unlocked = curInput.length >= MIN_THINK_CHARS;
+      const remain = Math.max(0, MIN_THINK_CHARS - curInput.length);
+
+      document.getElementById('s3PicTargetLabel').textContent = unlocked
+        ? `🔓 已解鎖！對應第 ${idx + 1} 題（你已寫 ${curInput.length} 字），點選圖卡接續想法`
+        : `🔒 第 ${idx + 1} 題提示已鎖定：請先自己寫下起頭想法（還差 ${remain} 字解鎖）`;
+
+      const btns = document.querySelectorAll('.s3-pic-btn');
+      btns.forEach(b => b.classList.toggle('opacity-55', !unlocked));
+
+      const qTxt = (item.zh + ' ' + item.en).toLowerCase();
+      const target = getTargetSchool();
+      const sch = state.equipped.school[0] || '全人教育 Holistic Education';
+      const exp = state.equipped.exp[0] || '課外活動';
+
+      let hints = [];
+      if (/想入讀|why.*study|join|school|特色|校訓/.test(qTxt)) {
+        hints = [
+          { t: '1️⃣ 扣連校情 Reason', d: `補寫欣賞${target}的${sch}`, ins: `而且我特別欣賞${target}重視${sch}，這讓我很想在此學習。 ` },
+          { t: '2️⃣ 扣連經歷 Fit', d: `舉出你在${exp}的體驗`, ins: `加上我曾參與${exp}，與貴校的發展方向十分配合。 ` },
+          { t: '3️⃣ 未來貢獻 Closing', d: '寫 1 句入讀後的目標', ins: `如果有機會入讀，我希望能發揮所長並貢獻學校。 ` }
+        ];
+      } else if (/組員|意見不合|disagree|team|合作|討論/.test(qTxt)) {
+        hints = [
+          { t: '1️⃣ 聆聽雙方 Listen', d: '說明你會如何先聆聽', ins: `我會先請雙方輪流講出理由，並記下大家的優點。 ` },
+          { t: '2️⃣ 折衷協調 Balance', d: `結合${exp}的團隊經驗`, ins: `就像我在${exp}學過團隊合作，我會嘗試結合兩邊的好點子。 ` },
+          { t: '3️⃣ 達成共識 Result', d: '寫出最後如何解決', ins: `最後大家一起投票或合理分工，順利完成任務。 ` }
+        ];
+      } else {
+        hints = [
+          { t: '1️⃣ 具體困難 Detail', d: `補充在${exp}遇到的挑戰`, ins: `當時我遇到的困難是時間緊迫／技巧未熟練。 ` },
+          { t: '2️⃣ 解決行動 Action', d: '寫出你做了甚麼改進', ins: `後來我主動請教老師並每天抽時間練習。 ` },
+          { t: '3️⃣ 成長收穫 Growth', d: '總結學到的品格態度', ins: `這次經歷讓我學會堅持，也變得更有自信！ ` }
+        ];
+      }
+
+      hints.forEach((h, i) => {
+        if (!btns[i]) return;
+        btns[i].dataset.insert = h.ins;
+        document.getElementById('s3T' + i).textContent = (unlocked ? '' : '🔒 ') + h.t;
+        document.getElementById('s3D' + i).textContent = unlocked ? h.d : '先寫至少 8 字後解鎖';
+      });
+    }
+
+    document.getElementById('qaCards').addEventListener('focusin', e => {
+      if (e.target && e.target.tagName === 'TEXTAREA') {
+        activeQaInput = e.target;
+        const m = e.target.id.match(/qaAns-(\d+)/);
+        if (m) { activeQaIdx = Number(m[1]); buildSmartS3Hints(activeQaIdx); }
+      }
+    });
+    document.getElementById('qaCards').addEventListener('input', e => {
+      if (e.target && e.target.tagName === 'TEXTAREA') {
+        const m = e.target.id.match(/qaAns-(\d+)/);
+        if (m) buildSmartS3Hints(Number(m[1]));
+      }
+    });
+
+    new MutationObserver(() => {
+      if (state.qaList.length && document.getElementById('qaAns-0')) {
+        activeQaIdx = 0;
+        activeQaInput = document.getElementById('qaAns-0');
+        buildSmartS3Hints(0);
+      }
+    }).observe(document.getElementById('qaCards'), { childList: true });
+
+    document.getElementById('toggleS3PicBtn').addEventListener('click', () => {
+      document.getElementById('s3PicGrid').classList.toggle('hidden');
+    });
+
+    document.getElementById('aiRefreshS3PicBtn').addEventListener('click', async () => {
+      const item = state.qaList[activeQaIdx];
+      if (!item) { toast('⚠️ 請先生成面試題'); return; }
+      const curInput = (document.getElementById('qaAns-' + activeQaIdx)?.value || '').trim();
+      if (curInput.length < MIN_THINK_CHARS) {
+        toast('🔒 請先自己寫下至少 8 個字，AI 才能依你的想法提供接續提示！');
+        document.getElementById('qaAns-' + activeQaIdx)?.focus();
+        return;
+      }
+      buildSmartS3Hints(activeQaIdx);
+      if (state.aiMode !== 'poe') { toast('🖼️ 已依當前題目與你的輸入更新圖卡！'); return; }
+      toast('⏳ AI 正在依你的現有草稿度身設計接續提示...');
+      try {
+        const raw = await callRemoteAI(`題目：${item.zh} / ${item.en}
+學生目標中學：${getTargetSchool()}｜強項：${state.equipped.exp.join('、') || '無'}
+學生目前已寫：「${curInput}」
+請針對學生「已經寫了的部分」，設計 3 個不同角度的「接著寫下去」短句提示（不要重複學生已寫的內容），只輸出純 JSON：[{"t":"短標題","d":"10字內提示","ins":"可直接接續的句子"}]`, '', 260);
+        const m = raw && raw.match(/\[[\s\S]*\]/);
+        if (m) {
+          const arr = JSON.parse(m[0]);
+          const btns = document.querySelectorAll('.s3-pic-btn');
+          arr.slice(0, 3).forEach((h, i) => {
+            if (!btns[i]) return;
+            btns[i].dataset.insert = h.ins + ' ';
+            document.getElementById('s3T' + i).textContent = `${i + 1}️⃣ ${h.t}`;
+            document.getElementById('s3D' + i).textContent = h.d;
+          });
+          toast('✨ 已依你的草稿度身更新圖卡！');
+        }
+      } catch (e) {}
+    });
+
+    document.querySelectorAll('.s3-pic-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = activeQaInput || document.querySelector('#qaCards textarea');
+        if (!target) { toast('⚠️ 請先按「⚡ 生成面試題」'); return; }
+        if (target.value.trim().length < MIN_THINK_CHARS) {
+          toast('🔒 請先自己寫下至少 8 個字（先思考起頭），再按圖卡接續！');
+          target.focus();
+          return;
+        }
+        target.value += (target.value ? ' ' : '') + btn.dataset.insert;
+        target.focus();
+        buildSmartS3Hints(activeQaIdx);
+        toast('🖼️ 已接續插入圖卡提示！');
+      });
+    });
+
+    // Stage 4: Language-Matched & Think-First Context-Aware 應認例問
+    function refreshS4LocalHints() {
+      const topic = document.getElementById('discussTopic').value;
+      const cur = document.getElementById('discussInput').value.trim();
+      const exp = state.equipped.exp[0] || '';
+      const isEn = state.discussLang === 'en';
+      const unlocked = Boolean(state.discussLang) && cur.length >= MIN_THINK_CHARS;
+      const remain = Math.max(0, MIN_THINK_CHARS - cur.length);
+
+      const lockBadge = document.getElementById('s4LockBadge');
+      if (lockBadge) {
+        if (!state.discussLang) { lockBadge.textContent = '🔒 先選語言'; lockBadge.className = 'ml-1 text-[10px] text-rose-600'; }
+        else if (!unlocked) { lockBadge.textContent = `🔒 先寫${remain}字解鎖`; lockBadge.className = 'ml-1 text-[10px] text-rose-600'; }
+        else { lockBadge.textContent = '🔓 已解鎖'; lockBadge.className = 'ml-1 text-[10px] text-emerald-700'; }
+      }
+      document.querySelectorAll('.s4-pic-btn').forEach(b => b.classList.toggle('opacity-55', !unlocked));
+
+      const peerSnippet = lastAiPeerSnippet ? lastAiPeerSnippet.slice(0, 14) + '...' : '';
+
+      if (!unlocked) {
+        document.getElementById('s4SubRespond').textContent = '先寫至少8字解鎖';
+        document.getElementById('s4SubView').textContent = '先寫至少8字解鎖';
+        document.getElementById('s4SubExample').textContent = '先寫至少8字解鎖';
+        document.getElementById('s4SubAsk').textContent = '先寫至少8字解鎖';
+        return;
+      }
+
+      if (isEn) {
+        s4CustomSnippets.respond = peerSnippet
+          ? `Building on what Xiao Yi said ("${peerSnippet}"), `
+          : `Responding to my classmate's idea, `;
+        document.getElementById('s4SubRespond').textContent = peerSnippet ? `Reply: ${peerSnippet}` : 'Respond to peer';
+
+        s4CustomSnippets.view = `I believe this helps us grow if we stay self-disciplined. `;
+        document.getElementById('s4SubView').textContent = 'Deepen your stance';
+
+        if (topic.includes('短視頻') || topic.toLowerCase().includes('short videos')) s4CustomSnippets.example = `For instance, I only watch 15 minutes of clips after finishing homework. `;
+        else if (topic.includes('義工') || topic.toLowerCase().includes('volunteering')) s4CustomSnippets.example = `For example, volunteering taught me to care more about people around me. `;
+        else s4CustomSnippets.example = `For example, I think on my own first before checking ideas with AI. `;
+        document.getElementById('s4SubExample').textContent = 'Add daily example';
+
+        s4CustomSnippets.ask = `Xiao Yi and Xiao Zhi, what do you think about this?`;
+        document.getElementById('s4SubAsk').textContent = 'Ask peers back';
+      } else {
+        s4CustomSnippets.respond = peerSnippet
+          ? `回應小毅剛才講「${peerSnippet}」，我想補充：`
+          : `回應剛才組員的看法，我覺得`;
+        document.getElementById('s4SubRespond').textContent = peerSnippet ? `回應：${peerSnippet}` : '回應組員觀點';
+
+        s4CustomSnippets.view = `而且這樣能培養我們獨立思考與自律。`;
+        document.getElementById('s4SubView').textContent = '深化個人立場';
+
+        if (topic.includes('短視頻') || topic.toLowerCase().includes('short videos')) s4CustomSnippets.example = '例如我規定自己做完功課先睇15分鐘短片。';
+        else if (topic.includes('義工') || topic.toLowerCase().includes('volunteering')) s4CustomSnippets.example = exp ? `例如我參與${exp}及義工探訪，學會主動關心人。` : '例如我參與義工探訪長者，學會主動關心別人。';
+        else s4CustomSnippets.example = exp ? `例如我在${exp}做專題時，先自己思考再用AI核對。` : '例如做專題先自己思考，再用AI核對資料。';
+        document.getElementById('s4SubExample').textContent = '補充生活例子';
+
+        s4CustomSnippets.ask = '小毅、小智，你哋有冇遇過類似情況？點睇？';
+        document.getElementById('s4SubAsk').textContent = '反問小毅／小智';
+      }
+    }
+
+    document.getElementById('discussTopic').addEventListener('change', refreshS4LocalHints);
+    document.getElementById('discussInput').addEventListener('input', refreshS4LocalHints);
+
+    new MutationObserver(() => {
+      const chatNodes = document.querySelectorAll('#discussChat > div');
+      for (let i = chatNodes.length - 1; i >= 0; i--) {
+        const txt = chatNodes[i].innerText || '';
+        if (txt.includes('小毅') || txt.includes('Xiao Yi')) {
+          lastAiPeerSnippet = txt.replace(/^.*(小毅|Xiao Yi)[:：]?\s*/i, '').trim();
+          break;
+        }
+      }
+      refreshS4LocalHints();
+    }).observe(document.getElementById('discussChat'), { childList: true });
+
+    document.getElementById('aiRefreshS4PicBtn').addEventListener('click', async () => {
+      if (!state.discussLang) { toast('⚠️ 請先選擇討論語言（中文或 English）'); return; }
+      const cur = document.getElementById('discussInput').value.trim();
+      if (cur.length < MIN_THINK_CHARS) {
+        toast('🔒 請先自己在發言框寫下至少 8 個字，再按更新提示！');
+        document.getElementById('discussInput').focus();
+        return;
+      }
+      refreshS4LocalHints();
+      if (state.aiMode !== 'poe') { toast('🖼️ 已依最新對話與你的輸入更新圖卡！'); return; }
+      const topic = document.getElementById('discussTopic').value;
+      const chatTxt = document.getElementById('discussChat').innerText.slice(-300);
+      const langDesc = state.discussLang === 'en' ? 'simple Primary 6 English ONLY' : '繁體廣東話口語 ONLY';
+      toast('⏳ AI 正在依你的輸入與最新對話更新提示...');
+      try {
+        const raw = await callRemoteAI(`討論題目：${topic}
+最近對話：
+${chatTxt}
+學生目前已輸入：「${cur}」
+請用 ${langDesc} 設計「應・認・例・問」4 個「接著學生現有輸入寫下去」的短句（勿重複學生已寫內容），只輸出純 JSON：{"respond":"...","view":"...","example":"...","ask":"..."}`, '', 220);
+        const m = raw && raw.match(/\{[\s\S]*\}/);
+        if (m) {
+          const obj = JSON.parse(m[0]);
+          if (obj.respond) { s4CustomSnippets.respond = obj.respond; document.getElementById('s4SubRespond').textContent = obj.respond.slice(0, 14) + '...'; }
+          if (obj.view) { s4CustomSnippets.view = obj.view; document.getElementById('s4SubView').textContent = obj.view.slice(0, 14) + '...'; }
+          if (obj.example) { s4CustomSnippets.example = obj.example; document.getElementById('s4SubExample').textContent = obj.example.slice(0, 14) + '...'; }
+          if (obj.ask) { s4CustomSnippets.ask = obj.ask; document.getElementById('s4SubAsk').textContent = obj.ask.slice(0, 14) + '...'; }
+          toast('✨ 已依你的輸入與對話更新 4 張圖卡！');
+        }
+      } catch (e) {}
+    });
+
+    document.querySelectorAll('.s4-pic-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!state.discussLang) { toast('⚠️ 請先在上方選擇「中文討論」或「English Discussion」'); return; }
+        const inp = document.getElementById('discussInput');
+        if (inp.value.trim().length < MIN_THINK_CHARS) {
+          toast('🔒 請先自己寫下至少 8 個字（先思考起頭），再解鎖圖卡提示！');
+          inp.focus();
+          return;
+        }
+        refreshS4LocalHints();
+        const step = btn.dataset.step;
+        const snippet = s4CustomSnippets[step] || '';
+        inp.value += (inp.value ? ' ' : '') + snippet;
+        inp.focus();
+        toast('🖼️ 已接續帶入「' + step.toUpperCase() + '」提示！');
+      });
+    });
+    refreshS4LocalHints();
+
+    const AUTOSAVE_KEY = 'jcmkec_workshop_autosave_v1';
+    function getStorage() {
+      try { return state.shadowMode ? sessionStorage : localStorage; } catch (e) { return null; }
+    }
+    function saveWorkshopState() {
+      const st = getStorage();
+      if (!st) return;
+      try {
+        const qaAns = {};
+        document.querySelectorAll('#qaCards textarea').forEach((ta, i) => { qaAns[i] = ta.value; });
+        const payload = {
+          shadowMode: state.shadowMode,
+          currentStage: state.currentStage,
+          maxStage: state.maxStage,
+          xp: state.xp,
+          vibe: state.vibe,
+          grade: document.getElementById('gradeSelect').value,
+          studentClass: document.getElementById('rClass').value,
+          studentName: document.getElementById('rName').value,
+          schoolPreset: document.getElementById('schoolPreset').value,
+          rTargetCustom: document.getElementById('rTargetCustom').value,
+          customSchoolNote: document.getElementById('customSchoolNote').value,
+          customExpNote: document.getElementById('customExpNote').value,
+          equipped: state.equipped,
+          introInput: document.getElementById('introInput').value,
+          draftBefore: state.draftBefore,
+          introScore: state.introScore,
+          introFeedback: document.getElementById('introFeedback').innerText,
+          qaList: state.qaList,
+          qaAns,
+          discussLang: state.discussLang,
+          discussTopic: document.getElementById('discussTopic').value,
+          discussTurns: state.discussTurns,
+          discussHistory: state.discussHistory,
+          discussEval: document.getElementById('discussEvalBox').innerText
+        };
+        st.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+      } catch (e) {}
+    }
+
+    function restoreWorkshopState() {
+      let raw = null;
+      try {
+        raw = sessionStorage.getItem(AUTOSAVE_KEY) || localStorage.getItem(AUTOSAVE_KEY);
+      } catch (e) {}
+      if (!raw) return;
+      try {
+        const p = JSON.parse(raw);
+        if (p.shadowMode) toggleShadowMode(true);
+        if (p.grade) document.getElementById('gradeSelect').value = p.grade;
+        if (p.studentClass) document.getElementById('rClass').value = p.studentClass;
+        if (p.studentName) document.getElementById('rName').value = p.studentName;
+        if (p.schoolPreset) {
+          document.getElementById('schoolPreset').value = p.schoolPreset;
+          document.getElementById('rTargetCustom').classList.toggle('hidden', p.schoolPreset !== 'CUSTOM');
+        }
+        if (p.rTargetCustom) document.getElementById('rTargetCustom').value = p.rTargetCustom;
+        if (p.customSchoolNote) document.getElementById('customSchoolNote').value = p.customSchoolNote;
+        if (p.customExpNote) document.getElementById('customExpNote').value = p.customExpNote;
+        if (p.equipped) {
+          state.equipped = p.equipped;
+          document.querySelectorAll('.equip-chip').forEach(b => {
+            const active = (state.equipped[b.dataset.group] || []).includes(b.dataset.val);
+            b.classList.toggle('bg-[#c8956c]', active); b.classList.toggle('text-white', active); b.classList.toggle('border-[#c8956c]', active);
+          });
+        }
+        if (p.vibe) {
+          state.vibe = p.vibe;
+          document.querySelectorAll('.vibe-card').forEach(x => x.classList.remove('vibe-selected-lion', 'vibe-selected-panda', 'vibe-selected-owl'));
+          const vc = document.querySelector(`.vibe-card[data-vibe="${p.vibe}"]`);
+          if (vc) vc.classList.add('vibe-selected-' + p.vibe);
+          document.getElementById('hudCoachIcon').textContent = p.vibe === 'lion' ? '🦁' : p.vibe === 'owl' ? '🦉' : '🐼';
+        }
+        if (p.introInput) document.getElementById('introInput').value = p.introInput;
+        if (p.draftBefore) state.draftBefore = p.draftBefore;
+        if (p.introScore) {
+          state.introScore = p.introScore;
+          document.getElementById('vIntro').textContent = p.introScore + ' / 5 分';
+          document.getElementById('introScorePill').textContent = p.introScore + ' / 5 分';
+        }
+        if (p.introFeedback) document.getElementById('introFeedback').innerText = p.introFeedback;
+        if (Array.isArray(p.qaList) && p.qaList.length) {
+          renderQACards(p.qaList);
+          if (p.qaAns) {
+            Object.entries(p.qaAns).forEach(([idx, val]) => {
+              const ta = document.getElementById('qaAns-' + idx);
+              if (ta) ta.value = val;
+            });
+          }
+        }
+        if (p.discussLang) {
+          const lbtn = document.querySelector(`.d-lang-btn[data-lang="${p.discussLang}"]`);
+          if (lbtn) lbtn.click();
+        }
+        if (p.discussTopic) {
+          const sel = document.getElementById('discussTopic');
+          if (Array.from(sel.options).some(o => o.value === p.discussTopic)) sel.value = p.discussTopic;
+          state.discussTopic = sel.value;
+        }
+        if (Array.isArray(p.discussTurns)) state.discussTurns = p.discussTurns;
+        if (Array.isArray(p.discussHistory) && p.discussHistory.length) {
+          state.discussHistory = p.discussHistory;
+          document.getElementById('discussChat').innerHTML = '';
+          p.discussHistory.forEach(h => {
+            if (h.sender === '同學' || h.sender === 'Student') addDiscussMsg('🧑 你 You', h.text, 'bg-[#c8956c] text-white ml-6');
+            else if (h.sender === '小毅' || h.sender === 'Xiao Yi') addDiscussMsg('🧠 ' + h.sender, h.text, 'bg-blue-50 border border-blue-200 mr-6');
+            else if (h.sender === '小智' || h.sender === 'Xiao Zhi') addDiscussMsg('🙂 ' + h.sender, h.text, 'bg-amber-50 border border-amber-200 mr-6');
+            else addDiscussMsg('📝 ' + h.sender, h.text, 'bg-emerald-50 border border-emerald-200 mr-6');
+          });
+        }
+        if (p.discussEval) document.getElementById('discussEvalBox').innerText = p.discussEval;
+        if (typeof p.xp === 'number') { state.xp = 0; gainXP(p.xp); }
+        syncStudentIdentity();
+        if (p.currentStage && p.currentStage > 1) {
+          state.maxStage = Math.max(state.maxStage, p.maxStage || p.currentStage);
+          goStage(p.currentStage);
+        }
+      } catch (e) {}
+    }
+
+    ['input', 'change', 'click'].forEach(evt => {
+      document.addEventListener(evt, () => setTimeout(saveWorkshopState, 80));
+    });
+    window.addEventListener('beforeunload', saveWorkshopState);
+    restoreWorkshopState();
+
+    // ====== Google Sheet 即時同步 & 老師後台監察邏輯 ======
+    let gasSyncTimer = null;
+    function getGasUrl() {
+      const inp = document.getElementById('gasUrlInput')?.value.trim();
+      return inp || state.gasUrl || DEFAULT_GAS_URL || localStorage.getItem('jcmkec_gas_url') || '';
+    }
+    if (document.getElementById('gasUrlInput')) {
+      document.getElementById('gasUrlInput').value = getGasUrl();
+      document.getElementById('gasUrlInput').addEventListener('change', e => {
+        try { localStorage.setItem('jcmkec_gas_url', e.target.value.trim()); } catch (err) {}
+      });
+    }
+
+    function syncToGoogleSheet() {
+      if (state.shadowMode) return; // Shadow 模式不上傳任何資料
+      const url = getGasUrl();
+      if (!url || !state.studentClass || !state.studentName) return;
+      clearTimeout(gasSyncTimer);
+      gasSyncTimer = setTimeout(async () => {
+        try {
+          const d = collectAllStudentWork();
+          const qaSummary = d.qaItems.map((q, i) => `Q${i+1}: ${q.q}\nAns: ${q.ans}\nFB: ${q.fb}`).join('\n---\n');
+          const payload = {
+            shadowMode: false,
+            studentClass: d.studentClass,
+            studentName: d.studentName,
+            targetSchool: d.targetSchool,
+            currentStage: state.currentStage,
+            xp: state.xp,
+            introScore: state.introScore,
+            discussLang: state.discussLang || '',
+            discussScore: state.discussScore || '',
+            introDraft: d.introDraft,
+            introFeedback: d.introFb,
+            qaSummary,
+            discussSummary: `題目：${d.discussTopic}\n${d.discussLog}\n評價：${d.discussEval}`,
+            updatedAt: new Date().toLocaleString('zh-HK')
+          };
+          await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+          });
+        } catch (e) {}
+      }, 900);
+    }
+
+    let teacherRecords = [];
+    const tModal = document.getElementById('teacherModal');
+    document.getElementById('openTeacherBtn').addEventListener('click', () => {
+      tModal.classList.remove('hidden'); tModal.classList.add('flex');
+    });
+    document.getElementById('closeTeacherBtn').addEventListener('click', () => {
+      tModal.classList.add('hidden'); tModal.classList.remove('flex');
+    });
+    document.getElementById('unlockTeacherBtn').addEventListener('click', () => {
+      const pin = document.getElementById('teacherPinInput').value.trim();
+      if (pin !== TEACHER_PIN) { toast('❌ 密碼不正確'); return; }
+      document.getElementById('teacherPinGate').classList.add('hidden');
+      document.getElementById('teacherDashBody').classList.remove('hidden');
+      if (getGasUrl()) fetchLiveRecords();
+    });
+
+    async function fetchLiveRecords() {
+      const url = getGasUrl();
+      const statusEl = document.getElementById('tGasStatus');
+      if (!url) {
+        statusEl.textContent = '⚠️ 尚未設定 Google Apps Script 網址（可於右上方「⚙️ 設定」填入，或直接批次匯入學生 HTML 成品）。';
+        return;
+      }
+      statusEl.textContent = '⏳ 正在從 Google Sheet 讀取最新全班數據...';
+      try {
+        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'action=list');
+        const json = await res.json();
+        if (json.ok && Array.isArray(json.rows)) {
+          teacherRecords = json.rows;
+          statusEl.textContent = `✅ 已同步最新數據（共 ${teacherRecords.length} 位學生｜${new Date().toLocaleTimeString('zh-HK')}）`;
+          renderTeacherDashboard();
+        } else {
+          statusEl.textContent = '❌ 讀取失敗：' + (json.error || '格式錯誤');
+        }
+      } catch (e) {
+        statusEl.textContent = '❌ 連線失敗：請確認 Apps Script 部署權限設為「所有人 (Anyone)」。';
+      }
+    }
+    document.getElementById('refreshLiveBtn').addEventListener('click', fetchLiveRecords);
+
+    // Offline HTML batch import backup
+    document.getElementById('importStudentFiles').addEventListener('change', async ev => {
+      const files = Array.from(ev.target.files || []);
+      for (const f of files) {
+        const txt = await f.text();
+        const doc = new DOMParser().parseFromString(txt, 'text/html');
+        const meta = doc.querySelector('.meta')?.innerText || '';
+        const clsM = meta.match(/班別：\s*([^｜\n]+)/);
+        const nameM = meta.match(/學生姓名：\s*([^｜\n]+)/);
+        const schM = meta.match(/目標中學：\s*([^｜\n]+)/);
+        const xpM = meta.match(/累積經驗：\s*(\d+)/);
+        const bodyTxt = doc.body?.innerText || '';
+        const scM = bodyTxt.match(/AI 量表評分：\s*([1-5])/);
+        teacherRecords.push({
+          studentClass: clsM ? clsM[1].trim() : f.name.split('_')[0],
+          studentName: nameM ? nameM[1].trim() : f.name,
+          targetSchool: schM ? schM[1].trim() : '—',
+          currentStage: 5,
+          xp: xpM ? Number(xpM[1]) : 100,
+          introScore: scM ? Number(scM[1]) : null,
+          discussScore: bodyTxt.includes('討論評價') ? '已匯出' : '',
+          updatedAt: '本機匯入',
+          introDraft: bodyTxt.slice(0, 1200),
+          introFeedback: '',
+          qaSummary: '',
+          discussSummary: ''
+        });
+      }
+      document.getElementById('tGasStatus').textContent = `📥 已匯入 ${files.length} 份學生檔案（累計 ${teacherRecords.length} 筆）`;
+      renderTeacherDashboard();
+    });
+
+    function renderTeacherDashboard() {
+      const filterSel = document.getElementById('tClassFilter');
+      const curFilter = filterSel.value;
+      const classes = [...new Set(teacherRecords.map(r => r.studentClass).filter(Boolean))];
+      filterSel.innerHTML = '<option value="ALL">全部班別 (' + teacherRecords.length + '人)</option>' +
+        classes.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (classes.includes(curFilter)) filterSel.value = curFilter;
+
+      const list = filterSel.value === 'ALL' ? teacherRecords : teacherRecords.filter(r => r.studentClass === filterSel.value);
+      const scores = list.map(r => r.introScore).filter(s => s >= 1 && s <= 5);
+      const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '—';
+      const discussDone = list.filter(r => r.discussScore).length;
+      const needSupport = list.filter(r => (r.introScore && r.introScore <= 2) || r.currentStage <= 2).length;
+
+      document.getElementById('tKpiCount').textContent = list.length;
+      document.getElementById('tKpiAvg').textContent = avg;
+      document.getElementById('tKpiDiscuss').textContent = discussDone;
+      document.getElementById('tKpiSupport').textContent = needSupport;
+
+      // Distribution chart
+      const distCounts = [1, 2, 3, 4, 5].map(s => scores.filter(x => x === s).length);
+      const maxC = Math.max(1, ...distCounts);
+      document.getElementById('tScoreDist').innerHTML = distCounts.map((cnt, idx) => {
+        const pct = Math.round((cnt / maxC) * 100);
+        const col = idx < 2 ? 'bg-rose-400' : idx === 2 ? 'bg-amber-400' : 'bg-[#00a878]';
+        return `<div class="p-2 rounded-xl bg-[#faf6f0] border border-[#e6e0d8]">
+          <div class="font-black text-[#1e293b]">${idx+1} 分</div>
+          <div class="h-14 flex items-end justify-center my-1"><div class="w-8 rounded-t-lg ${col}" style="height:${Math.max(8, pct)}%"></div></div>
+          <div class="font-bold text-[#756e65]">${cnt} 人</div>
+        </div>`;
+      }).join('');
+
+      const tbody = document.getElementById('tStudentRows');
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-[#756e65]">尚無符合條件的學生紀錄。</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map((r, i) => {
+        const badge = r.introScore
+          ? `<span class="px-2 py-0.5 rounded-lg font-black ${r.introScore <= 2 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">${r.introScore} / 5</span>`
+          : '<span class="text-slate-400">未評</span>';
+        return `<tr class="hover:bg-[#faf6f0]">
+          <td class="p-2.5 font-bold">${r.studentClass}</td>
+          <td class="p-2.5 font-black text-[#1e293b]">${r.studentName}</td>
+          <td class="p-2.5">${r.targetSchool}</td>
+          <td class="p-2.5">關卡 ${r.currentStage}</td>
+          <td class="p-2.5 font-bold">${r.xp}</td>
+          <td class="p-2.5">${badge}</td>
+          <td class="p-2.5">${r.discussScore || '—'}</td>
+          <td class="p-2.5 text-[11px] text-[#756e65]">${r.updatedAt}</td>
+          <td class="p-2.5"><button type="button" class="t-view-btn px-2.5 py-1 rounded-lg bg-[#c8956c] text-white text-[11px] font-bold cursor-pointer" data-idx="${i}">檢視作品</button></td>
+        </tr>`;
+      }).join('');
+
+      tbody.querySelectorAll('.t-view-btn').forEach(b => b.addEventListener('click', () => {
+        const r = list[Number(b.dataset.idx)];
+        document.getElementById('tDetailCard').classList.remove('hidden');
+        document.getElementById('tDetailTitle').textContent = `👤 ${r.studentClass} · ${r.studentName}（目標：${r.targetSchool}）`;
+        document.getElementById('tDetailBody').textContent =
+          `【個人簡介最新文稿】\n${r.introDraft || '（尚未填寫）'}\n\n【AI 批改建議】\n${r.introFeedback || '（尚未批改）'}\n\n【模擬面試紀錄】\n${r.qaSummary || '（尚未作答）'}\n\n【小組討論紀錄與評價】\n${r.discussSummary || '（尚未討論）'}`;
+      }));
+    }
+    document.getElementById('tClassFilter').addEventListener('change', renderTeacherDashboard);
+
+    document.getElementById('exportCsvBtn').addEventListener('click', () => {
+      if (!teacherRecords.length) { toast('⚠️ 目前沒有可匯出的紀錄'); return; }
+      const header = ['班別', '姓名', '目標中學', '目前關卡', 'XP', '自介分數', '討論評級', '最後更新'];
+      const rows = teacherRecords.map(r => [r.studentClass, r.studentName, r.targetSchool, r.currentStage, r.xp, r.introScore ?? '', r.discussScore, r.updatedAt]);
+      const csv = '\uFEFF' + [header, ...rows].map(arr => arr.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '20261120_AI面試工作坊_全班成績總表.csv';
+      a.click();
+    });
+  </script>
+</body>
+</html>
