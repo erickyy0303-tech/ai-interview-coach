@@ -79,7 +79,7 @@
         </button>
         <button id="openSettingsBtn" type="button" class="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-800 text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-sky-100">
           <span class="w-2 h-2 rounded-full bg-sky-500"></span>
-          <span id="engineLabel">免 Poe 智能引擎</span> ⚙️
+          <span id="engineLabel">免 Key 智能量表</span> ⚙️
         </button>
       </div>
     </div>
@@ -243,7 +243,7 @@
           <div class="p-3 rounded-2xl bg-amber-50/80 border-2 border-dashed border-[#c8956c] flex flex-wrap items-center justify-between gap-2">
             <div class="text-xs">
               <div class="font-black">② 📸 先紙上手寫，再拍照自動識字 / Handwrite & Scan</div>
-              <div class="text-[11px] text-[#756e65]">拍照後自動識字，或直接按「🎤 語音輸入」讀出講稿</div>
+              <div class="text-[11px] text-[#756e65]">無須 API Key：對住小冊子按「🎤 語音輸入」3 秒變文字，亦可拍照留底</div>
             </div>
             <label class="px-3.5 py-2 rounded-xl bg-[#c8956c] hover:bg-[#a6744c] text-white text-xs font-black cursor-pointer shadow">
               📷 拍照掃描 Scan
@@ -489,8 +489,8 @@
         <button id="closeSettingsBtn" type="button" class="text-[#756e65] font-bold cursor-pointer">✕</button>
       </div>
       <select id="aiModeSelect" class="w-full px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs font-bold">
-        <option value="gas" selected>⚡ 免 Poe 智能雙引擎（免費 Gemini 雲端 → 自動轉內建 1–5 分量表）</option>
-        <option value="offline">🛡️ 零 API Key 純本機智能量表＋語音輸入模式（100% 離線可用）</option>
+        <option value="offline" selected>🛡️ 零 API Key 智能量表＋語音輸入模式（0秒即時批改＋同步 Sheet）</option>
+        <option value="gas">⚡ 免費 Gemini 雲端代理（須於老師後台貼入 Gemini Key）</option>
         <option value="poe">🔌 自訂後備 Poe API（僅限有新 Key 時使用）</option>
       </select>
       <div id="poeConfigBox" class="space-y-2 p-3 rounded-xl bg-[#faf6f0] border border-[#e6e0d8]">
@@ -625,7 +625,7 @@
     // ==================================================
 
     const state = {
-      shadowMode: false, studentClass: '', studentName: '', grade: '小六', vibe: 'panda', aiMode: 'gas',
+      shadowMode: false, studentClass: '', studentName: '', grade: '小六', vibe: 'panda', aiMode: 'offline',
       poeKey: '',
       geminiKey: '', poeExhausted: false, poeFailCount: 0,
       poeModel: 'GPT-4o-mini', gasUrl: DEFAULT_GAS_URL,
@@ -1015,83 +1015,254 @@
       return null;
     }
 
-    // 內建零 Token 1–5 分智能量表批改引擎（當 Poe 及雲端 Key 均用盡時，仍可準確批改中英文自介並同步 Google Sheet！）
+    // 內建零 Token 1–5 分精細智能批改引擎（提取學生原文細節＋結構化優點分析＋具體改寫建議＋3題深度追問）
     function evaluateIntroLocally(txt) {
       const clean = (txt || '').trim();
       const isEn = (clean.match(/[a-zA-Z]/g) || []).length > clean.length * 0.35;
       const wordLen = isEn ? clean.split(/\s+/).filter(Boolean).length : clean.replace(/\s+/g, '').length;
-      const hasGreet = /你好|早晨|各位老師|校長|good morning|good afternoon|hello|hi |dear teacher/i.test(clean);
-      const hasSchool = /毅智|萬鈞|jcmkec|eduyoung|中學|secondary|college|全人|holistic|steam|創科|active|真善美|truth|校訓|motto/i.test(clean);
-      const hasExp = /參加|參與|比賽|活動|學會|隊|團|義工|服務|班長|風紀|joined|participated|member|team|club|band|choir|drama|debate|competition|award|prize|volunteer/i.test(clean);
-      const hasReflect = /學到|學會|培養|明白|克服|堅持|合作|自信|成長|目標|希望|貢獻|learned|learnt|taught|perseverance|teamwork|confidence|overcome|goal|hope to|contribute|future/i.test(clean);
+
+      // 1. 動態抽取學生原文中的真實細節
+      const zhSchoolM = clean.match(/([\u4e00-\u9fa5]{2,18}小學)/);
+      const enSchoolM = clean.match(/(TWGHs[^.,;\n]+|[\w\s']+Primary School)/i);
+      const curSchool = zhSchoolM ? zhSchoolM[1] : (enSchoolM ? enSchoolM[1].trim() : '');
+
+      const hasGreet = /你好|您好|早晨|各位老師|校長|我叫|我是|good morning|good afternoon|hello|hi |dear teacher|my name is/i.test(clean);
+      const hasMotto = /真[、・\s]*善[、・\s]*美|校訓|motto|truth[,\s]*goodness[,\s]*beauty/i.test(clean);
+      const hasSchoolFocus = /多元學習|全人教育|潛能|創科|STEAM|英語|關愛|毅智|萬鈞|jcmkec|eduyoung|holistic|potential|diverse/i.test(clean);
+      const hasSchool = /毅智|萬鈞|jcmkec|eduyoung|中學|secondary|college/i.test(clean) || hasMotto || hasSchoolFocus;
+
+      // 抽取活動／興趣範疇
+      const actKeywords = [
+        ['跑步', '長跑', '田徑', 'running', 'athletics', 'track'],
+        ['管樂團', '音樂', '鋼琴', '樂器', 'wind band', 'music', 'piano'],
+        ['無人機', '編程', '機械人', '創科', 'drone', 'coding', 'robotics'],
+        ['籃球', '足球', '羽毛球', '游泳', '運動', 'basketball', 'football', 'badminton', 'swimming', 'sports'],
+        ['英語話劇', '戲劇', '朗誦', '辯論', 'drama', 'speech', 'debate'],
+        ['義工', '童軍', '領袖生', '風紀', '班長', 'volunteer', 'scout', 'prefect']
+      ];
+      let actLabel = '';
+      for (const grp of actKeywords) {
+        const hit = grp.find(k => clean.toLowerCase().includes(k));
+        if (hit) { actLabel = grp[0]; break; }
+      }
+      const hasExp = Boolean(actLabel) || /參加|參與|比賽|活動|學會|隊|團|經驗|joined|participated|member|team|club|experience/i.test(clean);
+
+      // 抽取具體比賽／活動名稱
+      const zhEventM = clean.match(/(?:曾?參加了?|參與了?)([^，。,\n]{4,36}(?:比賽|挑戰賽|節|賽|活動|計劃|團|隊))/);
+      const enEventM = clean.match(/(?:joined|participated in|competed in)\s+(?:the\s+)?([^.,;\n]{4,40})/i);
+      const eventName = zhEventM ? zhEventM[1].trim() : (enEventM ? enEventM[1].trim() : '');
+
+      // 抽取具體獎項／成就
+      const zhAwardM = clean.match(/([^，。,\n]{2,26}(?:冠軍|亞軍|季軍|優異獎|金獎|銀獎|銅獎|獎項|獎))/);
+      const enAwardM = clean.match(/([^.,;\n]{3,35}(?:champion|1st|2nd|3rd|first|second|third|prize|medal|award))/i);
+      const awardName = zhAwardM ? zhAwardM[1].trim() : (enAwardM ? enAwardM[1].trim() : '');
+
+      // 抽取個人反思與成長關鍵詞
+      const reflectMatches = clean.match(/(突破自我|自信心?|堅持|努力|自律|團隊合作|責任感|抗壓|勇敢|perseverance|confidence|teamwork|self-discipline|resilience)/gi) || [];
+      const reflectList = [...new Set(reflectMatches.map(x => x.trim()))];
+      const hasReflect = reflectList.length > 0 || /學到|學會|體會|明白|成長|收穫|learned|learnt|taught/i.test(clean);
+
+      // 三大進階 5 分門檻：具體困難過程、性格特質、入學後發揮所長
+      const cleanNoEvent = clean.replace(/挑戰賽/g, "");
+      const hasChallenge = /氣喘|炎熱|落後|失誤|失敗|挫折|瓶頸|緊張|受傷|困難|挑戰|一度|告訴自己不能放棄|克服|每天練習|反覆練習|struggled|almost gave up|exhausted|nervous|setback|overcame|kept practising/i.test(cleanNoEvent);
+      const hasTrait = /性格|特質|我是一個|我是個|開朗|樂觀|細心|主動|負責任|積極|好奇|熱愛|outgoing|optimistic|patient|proactive|hardworking|curious/i.test(clean);
+      const hasFuture = /入讀後|希望在學校|希望加入|貢獻|推動|鼓勵同學|發揮所長|參加田徑隊|參加校隊|future|goal|hope to join|contribute|encourage classmates/i.test(clean);
       const hasClosing = /多謝|謝謝|感謝|thank you|thanks for/i.test(clean);
 
+      // 2. 嚴格評分（拒絕濫給滿分）
       let score = 1;
-      const pts = [hasGreet, hasSchool, hasExp, hasReflect, hasClosing].filter(Boolean).length;
-      if (wordLen >= (isEn ? 55 : 75) && pts >= 4 && hasReflect && hasSchool) score = 5;
-      else if (wordLen >= (isEn ? 38 : 50) && pts >= 3 && hasExp) score = 4;
-      else if (wordLen >= (isEn ? 22 : 30) && pts >= 2) score = 3;
-      else if (wordLen >= (isEn ? 12 : 16)) score = 2;
-      else score = 1;
+      const basePts = [hasGreet, hasSchool, hasExp, hasReflect, hasClosing].filter(Boolean).length;
+      const advPts = [hasChallenge, hasTrait, hasFuture].filter(Boolean).length;
 
-      const missingZh = [];
-      const missingEn = [];
-      if (!hasGreet) { missingZh.push('開首禮貌問候'); missingEn.push('polite greeting'); }
-      if (!hasSchool) { missingZh.push('扣連目標中學特色（如全人教育／STEAM）'); missingEn.push('target school focus (e.g. Holistic Education / STEAM)'); }
-      if (!hasExp) { missingZh.push('具體課外活動或比賽例子'); missingEn.push('a concrete activity or competition example'); }
-      if (!hasReflect) { missingZh.push('從經歷中學到的品格與未來目標'); missingEn.push('what you learned & your future goal'); }
-      if (!hasClosing) { missingZh.push('結語道謝'); missingEn.push('closing thank-you'); }
+      if (wordLen >= (isEn ? 70 : 120) && basePts === 5 && advPts >= 3) {
+        score = 5;
+      } else if (wordLen >= (isEn ? 48 : 80) && basePts >= 4 && (advPts >= 1 || Boolean(awardName) || Boolean(eventName))) {
+        score = 4;
+      } else if (wordLen >= (isEn ? 28 : 40) && basePts >= 2 && (hasExp || hasSchool)) {
+        score = 3;
+      } else if (wordLen >= (isEn ? 15 : 20)) {
+        score = 2;
+      } else {
+        score = 1;
+      }
 
-      const praise = score >= 4 ? '結構清晰，能結合個人經歷與目標中學！ / Clear structure connecting your story and school!'
-                   : score === 3 ? '已涵蓋基本重點，再加細節即可升上 4–5 分！ / Good basics—add one concrete detail to reach 4–5!'
-                   : '已有良好起頭，請按 4 步曲補充內容！ / Good start—expand using the 4 steps!';
+      const gradeTag = score === 5 ? '優良 Excellent' : score === 4 ? '佳 Good' : score === 3 ? '尚可 Fair' : score === 2 ? '普通 Basic' : '待加強 Needs Work';
 
-      const qPrompt = !hasReflect
-        ? '引導問題 Questions：你在這項活動遇過甚麼困難？最後怎樣克服？ / What challenge did you face in this activity, and how did you overcome it?'
-        : !hasSchool
-        ? '引導問題 Questions：毅智書院哪一項特色（如 STEAM 或多元英語）最吸引你？ / Which JCMKEC feature (e.g. STEAM or English Drama) attracts you most?'
-        : '引導問題 Questions：入讀中學後，你希望參加甚麼學會延續這份熱誠？ / Which club do you hope to join in secondary school to continue your passion?';
+      if (isEn) {
+        const pros = [];
+        if (hasGreet) pros.push(`• Clear opening introducing your name${curSchool ? ` and school (${curSchool})` : ''}, polite and natural tone.`);
+        if (hasSchool) pros.push(`• Connects target school's focus${hasMotto ? ' and motto ("Truth, Goodness, Beauty")' : ''}${actLabel ? ` with your own experience` : ''}, showing genuine preparation.`);
+        if (hasExp) pros.push(`• Shares concrete experience${eventName ? ` (${eventName})` : ''}${hasReflect ? ` and personal growth (${reflectList.slice(0, 3).join(', ') || 'reflection'})` : ''}.`);
+        if (awardName) pros.push(`• Highlights specific achievement (${awardName}), demonstrating dedication and talent.`);
+        if (hasClosing) pros.push(`• Courteous closing expressing enthusiasm and gratitude.`);
+        if (!pros.length) pros.push('• Good starting attempt—build your draft step by step using the 4-part structure.');
 
-      const tipLine = missingZh.length
-        ? `下一步升級建議 Upgrade：可補充「${missingZh.slice(0, 2).join('、')}」(${missingEn.slice(0, 2).join(', ')})。`
-        : '下一步升級建議 Upgrade：練習自然眼神交流與微笑語速！ / Practise eye contact and confident pacing!';
+        const cons = [];
+        if (!hasSchool) cons.push('• Add specific school fit: Name JCMKEC\'s Holistic Education, STEAM, or motto "Truth, Goodness, Beauty" and link it to your interest.');
+        if (!hasChallenge) cons.push('• Describe a specific difficulty & breakthrough: e.g., "During the race/training, I felt exhausted and nearly fell behind, yet I told myself not to give up and kept pacing until the finish." This shows resilience under pressure.');
+        if (!hasTrait) cons.push('• State your personal character traits (e.g., "I am an optimistic, persevering, and proactive learner") so interviewers know you as a person.');
+        if (!hasFuture) cons.push('• Mention how you hope to contribute at JCMKEC (e.g., joining the school team/club or encouraging peers).');
+        if (!cons.length) cons.push('• Excellent depth! Practise delivering this naturally in 50–60 seconds with confident eye contact.');
+
+        const qs = [
+          `1. What specific challenge did you face during ${eventName || 'your activity'}, and how did you overcome it?`,
+          `2. How has ${actLabel ? 'practising this activity' : 'your training'} helped you build self-discipline or handle pressure?`,
+          `3. After joining JCMKEC, how do you hope to contribute or encourage your classmates?`
+        ];
+
+        const report = [
+          `📊 量表評分 Score：${score} / 5 分（${gradeTag}）`,
+          ``,
+          `✅ 優點分析 Strengths：`,
+          ...pros,
+          ``,
+          `🔍 改進建議（讓內容更上一層樓）Upgrades：`,
+          ...cons.slice(0, 3),
+          ``,
+          `🧠 問題引導（幫助你深化內容）Guiding Questions：`,
+          ...qs
+        ].join('\n');
+        return { score, report };
+      }
+
+      // 中文版深度批改（完全對齊圖中風格）
+      const pros = [];
+      if (hasGreet) {
+        pros.push(`• 開首清楚交代姓名${curSchool ? `與就讀學校（${curSchool}）` : ''}，語氣自然有禮。`);
+      }
+      if (hasSchool) {
+        const schoolDetail = [
+          hasMotto ? '校訓「真、善、美」' : '',
+          hasSchoolFocus ? '重視多元學習與潛能發展的理念' : ''
+        ].filter(Boolean).join('及') || '學校辦學特色';
+        pros.push(`• 能指出${schoolDetail}${actLabel ? `，並與個人經歷（${actLabel}）作出呼應` : ''}，顯示對校情有認識。`);
+      }
+      if (hasExp) {
+        const refTxt = reflectList.length ? reflectList.slice(0, 3).join('、') : '成長與體會';
+        pros.push(`• 成功舉出具體個人經歷${eventName ? `（${eventName}）` : ''}，並說明從中獲得的成長（${refTxt}），內容具體且有反思。`);
+      }
+      if (awardName) {
+        pros.push(`• 有提及具體成就（${awardName}），突顯個人才能與努力。`);
+      }
+      if (hasClosing) {
+        pros.push('• 結語得體，表達入學期望與感謝之情。');
+      }
+      if (!pros.length) {
+        pros.push('• 已寫出基本自我介紹方向，建議按「問候→校情→經歷→結語」四步補足內容。');
+      }
+
+      const cons = [];
+      if (!hasSchool) {
+        cons.push('• 建議扣連目標中學校情：可點名「賽馬會萬鈞毅智書院」重視全人教育、多元學習或校訓「真、善、美」，說明為何吸引你。');
+      }
+      if (!hasChallenge) {
+        const exChallenge = actLabel === '跑步'
+          ? '「比賽當日天氣炎熱，我曾一度氣喘，但我告訴自己不能放棄，最終堅持完成比賽。」'
+          : actLabel === '管樂團'
+          ? '「練習高難度樂章時我曾多次出錯，但我每天加緊練習並請教隊友，最終順利完成演出。」'
+          : '「面對緊迫訓練或失誤時，我曾一度想放棄，但我調整心態並反覆練習，最終突破瓶頸。」';
+        cons.push(`• 可補充比賽或練習中的具體挑戰，例如：${exChallenge}這樣能更具體展示你的抗壓與堅毅精神。`);
+      }
+      if (!hasTrait) {
+        cons.push('• 建議加入個人性格特質（如：「我是一個堅毅、樂觀且主動的學生」），讓面試老師更全面了解你的性格。');
+      }
+      if (!hasFuture) {
+        const exFuture = actLabel === '跑步'
+          ? '例如參加田徑隊、鼓勵同學一同參與運動等。'
+          : '例如希望加入相關校隊或學會，與同學互相學習並貢獻校園。';
+        cons.push(`• 可簡單提及你希望如何在學校發揮所長，${exFuture}`);
+      }
+      if (wordLen < 65) {
+        cons.push(`• 目前篇幅約 ${wordLen} 字，建議擴充至 90–130 字（約 45–60 秒語速），讓故事更有感染力。`);
+      }
+      if (!cons.length) {
+        cons.push('• 內容結構已非常完整！建議朗讀時在關鍵轉折處略作停頓並保持自信微笑。');
+      }
+
+      const actTopic = actLabel || '這項活動';
+      const qs = [
+        `1. 你在${eventName || actTopic}中遇過甚麼具體困難？當時是如何克服的？`,
+        `2. ${actTopic}訓練如何幫助你建立自律或面對壓力？`,
+        `3. 入讀中學後，你希望如何發揮這份長處或帶動身邊同學？`
+      ];
 
       const report = [
-        `1. 整體亮點 Highlights：${praise}`,
-        `2. 評分 Score：${score} / 5 分`,
-        `3. ${tipLine}`,
-        `4. ${qPrompt}`,
-        `5. 推薦詞彙 Vocab：perseverance (堅毅), team spirit (團隊精神), holistic education (全人教育)`
+        `📊 量表評分 Score：${score} / 5 分（${gradeTag}）`,
+        ``,
+        `✅ 優點分析：`,
+        ...pros,
+        ``,
+        `🔍 改進建議（讓內容更上一層樓）：`,
+        ...cons.slice(0, 3),
+        ``,
+        `🧠 問題引導（幫助你深化內容）：`,
+        ...qs
       ].join('\n');
 
       return { score, report };
     }
 
     function evaluateDiscussLocally(turns, lang) {
-      const joined = turns.join(' ');
+      const joined = turns.join(' ').trim();
       const count = turns.length;
-      const hasRespond = /同意|認同|回應|承接|補充|小毅|小智|小德|agree|disagree|point|xiao yi|xiao zhi|xiao de|building on|respond/i.test(joined);
-      const hasExample = /例如|譬如|好似|試過|上次|平時|example|instance|such as|last week|once|when i/i.test(joined);
-      const hasAsk = /\?|？|點睇|覺得|同唔同意|呢|what do you think|how about|agree|opinion/i.test(joined);
+      const isEn = lang === 'en';
+      const wordOrCharLen = isEn ? joined.split(/\s+/).filter(Boolean).length : joined.replace(/\s+/g, '').length;
 
-      let cScore = 3;
-      if (joined.length >= 45 && hasExample) cScore = count >= 2 ? 5 : 4;
-      else if (joined.length >= 22) cScore = 3;
+      const hasStance = /認為|覺得|同意|不同意|反對|支持|應該|必須|think|believe|agree|disagree|should|must/i.test(joined);
+      const hasExample = /例如|譬如|好似|試過|上次|平時|做功課|短片|專題|義工|example|instance|such as|last week|once|homework|video|project/i.test(joined);
+      const hasReason = /因為|導致|影響|如果|雖然|但是|不過|因此|所以|不但|而且|because|since|therefore|however|although|if |so that|reason/i.test(joined);
+      const hasRespond = /小毅|小智|小德|剛才|你講|你提到|回應|承接|補充|xiao yi|xiao zhi|xiao de|your point|you said|building on|agree with/i.test(joined);
+      const hasAsk = /\?|？|點睇|覺得|同唔同意|有冇|如何|what do you think|how about|do you agree|have you/i.test(joined);
+
+      // 嚴格評分（拒絕輕易 5/5）
+      let cScore = 2;
+      if (count >= 2 && wordOrCharLen >= (isEn ? 50 : 95) && hasStance && hasExample && hasReason) cScore = 5;
+      else if (wordOrCharLen >= (isEn ? 32 : 55) && hasStance && (hasExample || hasReason)) cScore = 4;
+      else if (wordOrCharLen >= (isEn ? 16 : 25) && (hasStance || hasExample)) cScore = 3;
       else cScore = 2;
 
-      let iScore = 3;
-      if (hasRespond && hasAsk && count >= 2) iScore = 5;
-      else if (hasRespond || hasAsk) iScore = 4;
-      else iScore = count >= 2 ? 3 : 2;
+      let iScore = 2;
+      if (count >= 2 && hasRespond && hasAsk) iScore = 5;
+      else if (hasRespond && hasAsk) iScore = 4;
+      else if (hasRespond || hasAsk) iScore = 3;
+      else iScore = 2;
 
       const avg = (cScore + iScore) / 2;
-      const grade = avg >= 4.5 ? '優 (A)' : avg >= 3.5 ? '佳 (B+)' : avg >= 2.5 ? '尚可 (B)' : '待加強 (C)';
-      const tipZh = !hasExample ? '記得用「例如…」舉一個生活實例支持觀點！' : !hasAsk ? '發言結尾記得反問組員「你哋點睇？」增加互動！' : '表現出色！實體討論時記得保持眼神交流與點頭回應！';
-      const tipEn = !hasExample ? 'Add "For example..." with a real-life experience!' : !hasAsk ? 'End by asking "What do you think?" to invite peers!' : 'Great teamwork! Keep natural eye contact in the live discussion!';
+      const grade = avg >= 4.75 ? '優 (A)' : avg >= 3.75 ? '佳 (B+)' : avg >= 2.75 ? '尚可 (B)' : '待加強 (C)';
 
-      const text = lang === 'en'
-        ? `• Content Score: ${cScore} / 5\n• Interaction Score: ${iScore} / 5\n• Overall Grade: ${grade}\n• Coach Tip: ${tipEn}`
-        : `• 內容表現 Content：${cScore} / 5 分\n• 互動表現 Interaction：${iScore} / 5 分\n• 總評級 Grade：${grade}\n• 教練建議 Tip：${tipZh}`;
+      const cTips = [];
+      if (!hasExample) cTips.push(isEn ? 'Add a concrete daily example ("For example, last week when I...").' : '補上具體生活實例（例如「上次我做專題時試過…」），避免空泛講道理。');
+      if (!hasReason) cTips.push(isEn ? 'Explain WHY or compare pros & cons ("However / Because...").' : '加入因果推論或正反比較（「因為…／不過如果過度…就會…」），論點會更深刻。');
+      if (count < 2) cTips.push(isEn ? 'Speak at least 2–3 rounds to build deeper arguments.' : '目前只發言 1 輪，建議至少回應 2–3 輪展現延伸思考。');
+
+      const iTips = [];
+      if (!hasRespond) iTips.push(isEn ? 'Quote a peer first (e.g., "Building on Xiao Yi\'s point about...").' : '發言開首請先點名回應組員（如「承接小毅剛才講嘅…」），展現聆聽。');
+      if (!hasAsk) iTips.push(isEn ? 'End with an open question ("What do you think, Xiao Zhi?") to keep the group talking.' : '結尾加上反問（「小智、小德你哋有冇遇過類似情況？」），帶動互動氣氛。');
+
+      const allTips = [...cTips, ...iTips];
+      if (!allTips.length) {
+        allTips.push(isEn
+          ? 'Excellent depth & teamwork! In the live discussion, try summarizing everyone\'s views at the end.'
+          : '內容與互動俱佳！實體討論時可嘗試在最後 30 秒總結全組共識與分歧，爭取領袖高分。');
+      }
+
+      const nextRoundSample = !hasRespond
+        ? (isEn ? '"Building on Xiao Yi\'s point, I think we can set a 20-minute timer. What do you think?"' : '「承接小毅剛才講容易分心，我覺得可以設定每日 20 分鐘限時。小智你點睇？」')
+        : (isEn ? '"Besides study efficiency, should we also consider eye health and family time? How about you?"' : '「除了學習效率，我哋係咪都要考慮視力健康同親子溝通時間呢？大家點睇？」');
+
+      const text = isEn
+        ? [
+            `• Content Score: ${cScore} / 5  |  Interaction Score: ${iScore} / 5  |  Grade: ${grade}`,
+            `• Checklist: ${hasRespond ? '✅' : '⬜'} Respond  ${hasStance ? '✅' : '⬜'} Stance  ${hasExample ? '✅' : '⬜'} Example  ${hasReason ? '✅' : '⬜'} Reasoning  ${hasAsk ? '✅' : '⬜'} Ask Peers`,
+            `• How to Upgrade:\n  - ${allTips.slice(0, 2).join('\n  - ')}`,
+            `• Try Saying Next Round: ${nextRoundSample}`
+          ].join('\n')
+        : [
+            `• 內容表現：${cScore} / 5 分 ｜ 互動表現：${iScore} / 5 分 ｜ 總評級：${grade}`,
+            `• 應認例問檢核：${hasRespond ? '✅' : '⬜'} 應(回應)  ${hasStance ? '✅' : '⬜'} 認(立場)  ${hasExample ? '✅' : '⬜'} 例(實例)  ${hasReason ? '✅' : '⬜'} 推論  ${hasAsk ? '✅' : '⬜'} 問(反問)`,
+            `• 針對性改善建議：\n  - ${allTips.slice(0, 2).join('\n  - ')}`,
+            `• 下一輪升級發言示範：${nextRoundSample}`
+          ].join('\n');
       return { grade, text };
     }
 
@@ -1173,7 +1344,7 @@
       if (state.aiMode !== 'offline') {
         document.getElementById('introFeedback').textContent = '⏳ 極速批改中...';
         try {
-          const reply = await callRemoteAI(`你是毅老師，用中英對照精簡點列批改以下${state.grade}自我介紹（禁止使用markdown星號或HTML標籤，總字數<=120字）：\n1.錯字 Typos：\n2.評分 Score (1-5)：\n3.引導問題 Questions：\n4.可用詞彙 Vocab：\n講稿：${txt}`, state.scannedImageDataUrl, 240);
+          const reply = await callRemoteAI(`你是嚴格而專業的升中面試教練，批改以下${state.grade}自我介紹（禁止使用markdown星號或HTML標籤）。嚴格評分：不可濫給 5/5 滿分！必須同時具備「具體比賽/訓練困難與克服過程」、「個人性格特質」及「入學後發揮所長目標」才可給 5 分；只寫經歷與獎項給 4 分。請引用學生原文按以下格式輸出：\n📊 評分 Score：X / 5 分\n✅ 優點分析：（點列 3-5 點，引用原文學校、校訓、活動及成就）\n🔍 改進建議（讓內容更上一層樓）：（點列 2-3 點具體缺漏，並附 1 句可直接套用的例句）\n🧠 問題引導（幫助你深化內容）：（3 條針對原文的追問）\n講稿：${txt}`, state.scannedImageDataUrl, 480);
           if (reply) {
             document.getElementById('introFeedback').innerHTML = `<div class="whitespace-pre-wrap">${cleanMarkdownText(reply)}</div>`;
             const scClean = cleanMarkdownText(reply).replace(/\(?1\s*[-–~至]\s*5\)?/g, '');
@@ -1255,7 +1426,29 @@
           const reply = await callRemoteAI(`題目：${state.qaList[i].zh} / ${state.qaList[i].en}\n回答：${ans}\n用中英對照精簡點評（<=70字，不要用星號或HTML標籤）：1.優點；2.改進建議。`, '', 180);
           if (reply) { fb.textContent = cleanMarkdownText(reply); gainXP(10); return; }
         } catch (e) {}
-        fb.textContent = '👍 回應切題！建議加一個具體例子會更出色。';
+        const isEnAns = (ans.match(/[a-zA-Z]/g) || []).length > ans.length * 0.4;
+        const ansLen = isEnAns ? ans.split(/\s+/).filter(Boolean).length : ans.replace(/\s+/g, '').length;
+        const hasReason = /因為|所以|由於|為了|because|since|so that|to learn/i.test(ans);
+        const hasEx = /例如|譬如|試過|參加|練習|克服|for example|when i|joined|practised|overcame/i.test(ans);
+        const hasGoal = /學到|學會|明白|成長|希望|貢獻|目標|learned|learnt|taught|hope to|goal|contribute/i.test(ans);
+        const qPts = [hasReason, hasEx, hasGoal].filter(Boolean).length;
+        let qScore = 2;
+        if (ansLen >= (isEnAns ? 32 : 45) && qPts === 3) qScore = 5;
+        else if (ansLen >= (isEnAns ? 20 : 28) && qPts >= 2) qScore = 4;
+        else if (ansLen >= (isEnAns ? 10 : 14) && qPts >= 1) qScore = 3;
+        else qScore = 2;
+
+        const qGaps = [];
+        if (!hasReason) qGaps.push(isEnAns ? 'Add "because..." to state your clear reason.' : '補寫「因為…」交代清楚背後原因。');
+        if (!hasEx) qGaps.push(isEnAns ? 'Include a concrete real-life example or action you took.' : '加入「例如我曾…」具體行動或經歷，避免只講空話。');
+        if (!hasGoal) qGaps.push(isEnAns ? 'End with what you learned or how it helps at JCMKEC.' : '結尾扣連學到的態度或入讀後的目標。');
+        if (!qGaps.length) qGaps.push(isEnAns ? 'Strong answer! Practise speaking fluently in under 45 seconds.' : '內容結構完整！試試控制語速在 45 秒內自信講出。');
+
+        fb.textContent = isEnAns
+          ? `📊 Q&A Score: ${qScore} / 5\n• Checklist: ${hasReason ? '✅' : '⬜'} Reason  ${hasEx ? '✅' : '⬜'} Example  ${hasGoal ? '✅' : '⬜'} Takeaway/Goal\n• Upgrade Tip: ${qGaps.join(' ')}`
+          : `📊 答題評分：${qScore} / 5 分\n• 檢核：${hasReason ? '✅' : '⬜'} 原因  ${hasEx ? '✅' : '⬜'} 具體例子  ${hasGoal ? '✅' : '⬜'} 收穫/目標\n• 改善建議：${qGaps.join(' ')}`;
+        syncToGoogleSheet();
+        gainXP(10);
       }));
     }
 
@@ -1490,7 +1683,7 @@ ${state.discussLang === 'en' ? 'Xiao Yi: (directly addresses student message + b
       if (state.aiMode !== 'offline') {
         box.textContent = '⏳ 正在快速評分...';
         try {
-          const reply = await callRemoteAI(`以中英對照簡評以下討論發言（內容1-5分、互動1-5分，禁止使用星號或HTML標籤，<=90字）：\n${state.discussTurns.join('\n')}`, '', 180);
+          const reply = await callRemoteAI(`你是嚴格的毅老師，以中英對照評核以下小組討論發言（禁止使用星號或HTML標籤，約140字）。切勿輕易給 5/5 滿分，需有具體生活例子＋正反推論＋點名回應與反問組員才可給 5 分。輸出：\n1. 內容(1-5分)與互動(1-5分)及總評級：\n2. 2項具體改善建議（指出缺例子或反問）：\n3. 下一輪升級發言示範（1句）：\n發言紀錄：\n${state.discussTurns.join('\n')}`, '', 320);
           if (reply) {
             box.textContent = cleanMarkdownText(reply);
             state.discussScore = 'AI 已評級'; syncToGoogleSheet();
@@ -2241,8 +2434,10 @@ ${chatTxt}
         const j = await r.json();
         if (j && j.forceMode === 'offline') {
           state.aiMode = 'offline';
-          updateEngineBadge('全班智能量表', 'bg-amber-500');
+          updateEngineBadge('免 Key 智能量表', 'bg-amber-500');
         } else if (j && j.hasGeminiBackup) {
+          state.aiMode = 'gas';
+          updateEngineBadge('Gemini 雲端就緒', 'bg-emerald-500');
           const b = document.getElementById('tForceModeBadge');
           if (b) b.textContent = '目前：雲端 Gemini 後備已就緒';
         }
