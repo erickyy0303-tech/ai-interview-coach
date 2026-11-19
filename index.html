@@ -242,7 +242,7 @@
         <div class="lg:col-span-7 space-y-3">
           <div class="p-3 rounded-2xl bg-amber-50/80 border-2 border-dashed border-[#c8956c] flex flex-wrap items-center justify-between gap-2">
             <div class="text-xs">
-              <div class="font-black">📸 先紙上手寫，再拍照自動識字 / Handwrite & Scan</div>
+              <div class="font-black">② 📸 先紙上手寫，再拍照自動識字 / Handwrite & Scan</div>
               <div class="text-[11px] text-[#756e65]">Upload photo to auto-transcribe via Poe AI</div>
             </div>
             <label class="px-3.5 py-2 rounded-xl bg-[#c8956c] hover:bg-[#a6744c] text-white text-xs font-black cursor-pointer shadow">
@@ -961,7 +961,8 @@
           const reply = await callRemoteAI(`你是毅老師，用中英對照精簡點列批改以下${state.grade}自我介紹（禁止使用markdown星號或HTML標籤，總字數<=120字）：\n1.錯字 Typos：\n2.評分 Score (1-5)：\n3.引導問題 Questions：\n4.可用詞彙 Vocab：\n講稿：${txt}`, state.scannedImageDataUrl, 240);
           if (reply) {
             document.getElementById('introFeedback').innerHTML = `<div class="whitespace-pre-wrap">${cleanMarkdownText(reply)}</div>`;
-            const scMatch = cleanMarkdownText(reply).match(/([1-5])\s*\/\s*5|([1-5])\s*分|(?:Score|評分|分數)[^\d\n]{0,14}([1-5])/i);
+            const scClean = cleanMarkdownText(reply).replace(/\(?1\s*[-–~至]\s*5\)?/g, '');
+            const scMatch = scClean.match(/([1-5])\s*\/\s*5|([1-5])\s*分|(?:Score|評分|分數)[^\d\n]{0,10}([1-5])/i);
             if (scMatch) {
               state.introScore = Number(scMatch[1] || scMatch[2] || scMatch[3]);
               document.getElementById('vIntro').textContent = state.introScore + ' / 5 分';
