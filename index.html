@@ -79,7 +79,7 @@
         </button>
         <button id="openSettingsBtn" type="button" class="px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-800 text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-sky-100">
           <span class="w-2 h-2 rounded-full bg-sky-500"></span>
-          <span id="engineLabel">Poe 極速連線</span> ⚙️
+          <span id="engineLabel">免 Poe 智能引擎</span> ⚙️
         </button>
       </div>
     </div>
@@ -243,7 +243,7 @@
           <div class="p-3 rounded-2xl bg-amber-50/80 border-2 border-dashed border-[#c8956c] flex flex-wrap items-center justify-between gap-2">
             <div class="text-xs">
               <div class="font-black">② 📸 先紙上手寫，再拍照自動識字 / Handwrite & Scan</div>
-              <div class="text-[11px] text-[#756e65]">Upload photo to auto-transcribe via Poe AI</div>
+              <div class="text-[11px] text-[#756e65]">拍照後自動識字，或直接按「🎤 語音輸入」讀出講稿</div>
             </div>
             <label class="px-3.5 py-2 rounded-xl bg-[#c8956c] hover:bg-[#a6744c] text-white text-xs font-black cursor-pointer shadow">
               📷 拍照掃描 Scan
@@ -489,18 +489,21 @@
         <button id="closeSettingsBtn" type="button" class="text-[#756e65] font-bold cursor-pointer">✕</button>
       </div>
       <select id="aiModeSelect" class="w-full px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs font-bold">
-        <option value="poe" selected>付費 Poe API（極速模型，已自動連線）</option>
-        <option value="offline">課堂免 Key 離線模式</option>
+        <option value="gas" selected>⚡ 免 Poe 智能雙引擎（免費 Gemini 雲端 → 自動轉內建 1–5 分量表）</option>
+        <option value="offline">🛡️ 零 API Key 純本機智能量表＋語音輸入模式（100% 離線可用）</option>
+        <option value="poe">🔌 自訂後備 Poe API（僅限有新 Key 時使用）</option>
       </select>
       <div id="poeConfigBox" class="space-y-2 p-3 rounded-xl bg-[#faf6f0] border border-[#e6e0d8]">
         <label class="block text-[11px] font-bold text-[#756e65]">Poe API Key：</label>
-        <input id="poeKeyInput" type="password" value="sk-poe-Hzwb134lJ_m-6gCxWRY-VtFW6c9tpLuYns6HyPP0xpo" class="w-full px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs bg-white" />
+        <input id="poeKeyInput" type="password" value="" placeholder="（Poe 已停用，請改用下方免費 Gemini Key 或零 Key 模式）" class="w-full px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs bg-white" />
         <label class="block text-[11px] font-bold text-[#756e65]">選擇速度模型 / Model Speed：</label>
         <select id="poeModelSelect" class="w-full px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs bg-white font-bold">
           <option value="GPT-4o-mini" selected>GPT-4o-mini（⚡ 1秒極速回應＋睇圖識字）</option>
           <option value="Gemini-2.5-Flash">Gemini-2.5-Flash（⚡ 極速＋強效手寫OCR）</option>
           <option value="Claude-Sonnet-4.6">Claude-Sonnet-4.6（深度分析，較慢）</option>
         </select>
+        <label class="block text-[11px] font-bold text-[#756e65] pt-1">免費 Google Gemini API Key（選填，貼上即啟用免費手寫拍照 OCR＋AI 批改）：</label>
+        <input id="geminiKeyInput" type="password" placeholder="AIzaSy...（可於老師後台一鍵同步全班）" class="w-full px-3 py-2 rounded-xl border border-[#e6e0d8] text-xs bg-white" />
       </div>
             <div class="space-y-1.5 p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
         <label class="block text-[11px] font-bold text-emerald-900">📊 Google Sheet 即時同步網址 (Apps Script URL)：</label>
@@ -555,6 +558,22 @@
 
         <div id="tGasStatus" class="text-[11px] font-bold text-[#756e65]"></div>
 
+        <!-- Emergency Class-Wide AI Engine & Token Failover Control -->
+        <div class="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="text-xs font-black text-amber-950">⚡ 免費 Gemini API 雲端啟用中心（已停用 Poe，貼入免費 Gemini Key 或一鍵全班使用智能量表）</div>
+            <span id="tForceModeBadge" class="px-2.5 py-0.5 rounded-full bg-white border border-amber-300 text-[11px] font-bold text-amber-900">目前：自動智能備援</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input id="tCloudGeminiKey" type="password" placeholder="貼上免費 Gemini API Key (AIzaSy...)" class="px-3 py-1.5 rounded-xl border border-amber-300 text-xs bg-white" />
+            <input id="tCloudPoeKey" type="password" placeholder="或貼上新後備 Poe API Key" class="px-3 py-1.5 rounded-xl border border-amber-300 text-xs bg-white" />
+            <div class="flex gap-1.5">
+              <button id="pushCloudKeysBtn" type="button" class="flex-1 px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-black cursor-pointer">☁️ 同步後備 Key 給全班</button>
+              <button id="forceClassOfflineBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-bold cursor-pointer" title="全班平板自動轉用內建智能量表＋語音輸入">全班轉免Token</button>
+            </div>
+          </div>
+        </div>
+
         <!-- KPI Row -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="p-3.5 rounded-2xl bg-white border border-[#e6e0d8]"><div class="text-[11px] font-bold text-[#756e65]">已追蹤學生數</div><div id="tKpiCount" class="text-2xl font-black text-[#1e293b] mt-0.5">0</div></div>
@@ -606,8 +625,9 @@
     // ==================================================
 
     const state = {
-      shadowMode: false, studentClass: '', studentName: '', grade: '小六', vibe: 'panda', aiMode: 'poe',
-      poeKey: 'sk-poe-Hzwb134lJ_m-6gCxWRY-VtFW6c9tpLuYns6HyPP0xpo',
+      shadowMode: false, studentClass: '', studentName: '', grade: '小六', vibe: 'panda', aiMode: 'gas',
+      poeKey: '',
+      geminiKey: '', poeExhausted: false, poeFailCount: 0,
       poeModel: 'GPT-4o-mini', gasUrl: DEFAULT_GAS_URL,
       xp: 10, maxStage: 1, currentStage: 1,
       equipped: { school: [], exp: [] },
@@ -773,33 +793,56 @@
     const aiModeSel = document.getElementById('aiModeSelect');
     document.getElementById('openSettingsBtn').addEventListener('click', () => { modal.classList.remove('hidden'); modal.classList.add('flex'); });
     document.getElementById('closeSettingsBtn').addEventListener('click', () => { modal.classList.add('hidden'); modal.classList.remove('flex'); });
-    aiModeSel.addEventListener('change', () => document.getElementById('poeConfigBox').classList.toggle('hidden', aiModeSel.value !== 'poe'));
+    aiModeSel.addEventListener('change', () => document.getElementById('poeConfigBox').classList.toggle('hidden', aiModeSel.value === 'offline'));
 
     document.getElementById('testApiBtn').addEventListener('click', async () => {
       const resEl = document.getElementById('apiTestResult');
-      resEl.classList.remove('hidden'); resEl.textContent = '⏳ 測試中...';
+      resEl.classList.remove('hidden'); resEl.textContent = '⏳ 測試 Gemini / 雲端代理連線中...';
       try {
-        const k = document.getElementById('poeKeyInput').value.trim();
-        const m = document.getElementById('poeModelSelect').value;
-        const r = await fetch('https://api.poe.com/v1/chat/completions', {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + k },
-          body: JSON.stringify({ model: m, messages: [{ role: 'user', content: 'Hi' }], max_tokens: 10 })
-        });
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        resEl.className = 'text-[11px] font-bold text-emerald-700';
-        resEl.textContent = `✅ ${m} 連線成功！`;
+        const gk = document.getElementById('geminiKeyInput')?.value.trim() || state.geminiKey;
+        if (gk) {
+          const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(gk), {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Hi' }] }], generationConfig: { maxOutputTokens: 10 } })
+          });
+          if (!r.ok) throw new Error('Gemini HTTP ' + r.status);
+          resEl.className = 'text-[11px] font-bold text-emerald-700';
+          resEl.textContent = '✅ 免費 Gemini 2.5 Flash 連線成功！';
+          return;
+        }
+        const gasRes = await callGasAiProxy('Reply OK', '', 10);
+        if (gasRes) {
+          resEl.className = 'text-[11px] font-bold text-emerald-700';
+          resEl.textContent = '✅ 雲端 Apps Script 免費 Gemini 代理連線成功！';
+          return;
+        }
+        resEl.className = 'text-[11px] font-bold text-amber-700';
+        resEl.textContent = '🛡️ 目前未設 Gemini Key，系統會自動使用「內建 1–5 分智能量表＋語音輸入」運作！';
       } catch (e) {
         resEl.className = 'text-[11px] font-bold text-rose-600';
         resEl.textContent = '❌ 失敗：' + e.message;
       }
     });
 
+    function updateEngineBadge(labelText, dotClass) {
+      const lbl = document.getElementById('engineLabel');
+      if (lbl) lbl.textContent = labelText;
+      const dot = document.querySelector('#openSettingsBtn span.rounded-full');
+      if (dot && dotClass) dot.className = 'w-2 h-2 rounded-full ' + dotClass;
+    }
+
     document.getElementById('saveSettingsBtn').addEventListener('click', () => {
       state.aiMode = aiModeSel.value;
       state.poeKey = document.getElementById('poeKeyInput').value.trim();
+      state.geminiKey = document.getElementById('geminiKeyInput')?.value.trim() || '';
+      state.poeExhausted = false;
+      state.poeFailCount = 0;
       state.poeModel = document.getElementById('poeModelSelect').value;
       state.gasUrl = document.getElementById('gasUrlInput').value.trim();
-      document.getElementById('engineLabel').textContent = state.aiMode === 'poe' ? 'Poe 極速連線' : '免Key模式';
+      try { if (state.geminiKey) localStorage.setItem('jcmkec_gemini_key', state.geminiKey); } catch (e) {}
+      if (state.aiMode === 'poe') updateEngineBadge('智能雙重連線', 'bg-sky-500');
+      else if (state.aiMode === 'gas') updateEngineBadge('雲端後備AI', 'bg-emerald-500');
+      else updateEngineBadge('智能量表模式', 'bg-amber-500');
       modal.classList.add('hidden'); modal.classList.remove('flex');
       toast('⚙️ 設定已儲存');
     });
@@ -867,17 +910,189 @@
       });
     });
 
-    async function callRemoteAI(promptText, imageUrl, maxTokens = 280) {
-      if (state.aiMode !== 'poe' || !state.poeKey) return null;
-      const content = imageUrl ? [{ type: 'text', text: promptText }, { type: 'image_url', image_url: { url: imageUrl } }] : promptText;
-      const res = await fetch('https://api.poe.com/v1/chat/completions', {
+    try {
+      const savedGem = localStorage.getItem('jcmkec_gemini_key');
+      if (savedGem) {
+        state.geminiKey = savedGem;
+        setTimeout(() => { const gi = document.getElementById('geminiKeyInput'); if (gi) gi.value = savedGem; }, 50);
+      }
+    } catch (e) {}
+
+    async function callDirectGemini(promptText, imageUrl, maxTokens) {
+      const gKey = state.geminiKey || document.getElementById('geminiKeyInput')?.value.trim() || '';
+      if (!gKey) return null;
+      const parts = [{ text: promptText }];
+      if (imageUrl && imageUrl.startsWith('data:image/')) {
+        const comma = imageUrl.indexOf(',');
+        const mime = imageUrl.slice(5, comma).split(';')[0] || 'image/jpeg';
+        parts.push({ inline_data: { mime_type: mime, data: imageUrl.slice(comma + 1) } });
+      }
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(gKey), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.poeKey}` },
-        body: JSON.stringify({ model: state.poeModel, messages: [{ role: 'user', content }], max_tokens: maxTokens, temperature: 0.6 })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.6 } })
       });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      return data.choices?.[0]?.message?.content || '';
+      if (!r.ok) throw new Error('Gemini HTTP ' + r.status);
+      const j = await r.json();
+      return j.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+    }
+
+    async function callGasAiProxy(promptText, imageUrl, maxTokens) {
+      const url = typeof getGasUrl === 'function' ? getGasUrl() : DEFAULT_GAS_URL;
+      if (!url) return null;
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'ai_proxy',
+          prompt: promptText,
+          imageUrl: imageUrl || '',
+          maxTokens: maxTokens,
+          model: state.poeModel,
+          clientGeminiKey: state.geminiKey || ''
+        })
+      });
+      if (!r.ok) return null;
+      const j = await r.json();
+      if (j && j.ok && j.text) {
+        updateEngineBadge('雲端後備AI', 'bg-emerald-500');
+        return j.text;
+      }
+      return null;
+    }
+
+    // 免 Poe 雙引擎 AI 呼叫：1. 本機免費 Gemini Key / Apps Script 雲端免費 Gemini 代理 -> 2. 僅在手動選 poe 且有新 Key 時才試 Poe -> 3. 回傳 null 觸發內建 1–5 分智能量表引擎
+    async function callRemoteAI(promptText, imageUrl, maxTokens = 280) {
+      if (state.aiMode === 'offline') return null;
+
+      // 第一層（免 Poe）：先試本機 Gemini Key 或 Apps Script 雲端 Gemini 免費代理
+      try {
+        const gemDirect = await callDirectGemini(promptText, imageUrl, maxTokens);
+        if (gemDirect) { updateEngineBadge('Gemini 免費連線', 'bg-emerald-500'); return gemDirect; }
+      } catch (e) {}
+
+      try {
+        const gasReply = await callGasAiProxy(promptText, imageUrl, maxTokens);
+        if (gasReply) return gasReply;
+      } catch (e) {}
+
+      // 備選層：僅當老師手動切換至 poe 模式並填入新 Key 時才呼叫 Poe
+      if (state.aiMode === 'poe' && state.poeKey && !state.poeExhausted) {
+        try {
+          const content = imageUrl ? [{ type: 'text', text: promptText }, { type: 'image_url', image_url: { url: imageUrl } }] : promptText;
+          const ctrl = new AbortController();
+          const tId = setTimeout(() => ctrl.abort(), 14000);
+          const res = await fetch('https://api.poe.com/v1/chat/completions', {
+            method: 'POST',
+            signal: ctrl.signal,
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.poeKey}` },
+            body: JSON.stringify({ model: state.poeModel, messages: [{ role: 'user', content }], max_tokens: maxTokens, temperature: 0.6 })
+          });
+          clearTimeout(tId);
+          if (res.ok) {
+            const data = await res.json();
+            const out = data.choices?.[0]?.message?.content || '';
+            if (out) { state.poeFailCount = 0; return out; }
+          } else if ([401, 402, 403, 429].includes(res.status)) {
+            state.poeFailCount += 1;
+            if (res.status === 402 || state.poeFailCount >= 2) {
+              state.poeExhausted = true;
+              updateEngineBadge('自動備援模式', 'bg-amber-500');
+            }
+          }
+        } catch (err) {
+          state.poeFailCount += 1;
+          if (state.poeFailCount >= 2) {
+            state.poeExhausted = true;
+            updateEngineBadge('自動備援模式', 'bg-amber-500');
+          }
+        }
+      }
+
+
+
+      updateEngineBadge('智能量表備援', 'bg-amber-500');
+      return null;
+    }
+
+    // 內建零 Token 1–5 分智能量表批改引擎（當 Poe 及雲端 Key 均用盡時，仍可準確批改中英文自介並同步 Google Sheet！）
+    function evaluateIntroLocally(txt) {
+      const clean = (txt || '').trim();
+      const isEn = (clean.match(/[a-zA-Z]/g) || []).length > clean.length * 0.35;
+      const wordLen = isEn ? clean.split(/\s+/).filter(Boolean).length : clean.replace(/\s+/g, '').length;
+      const hasGreet = /你好|早晨|各位老師|校長|good morning|good afternoon|hello|hi |dear teacher/i.test(clean);
+      const hasSchool = /毅智|萬鈞|jcmkec|eduyoung|中學|secondary|college|全人|holistic|steam|創科|active|真善美|truth|校訓|motto/i.test(clean);
+      const hasExp = /參加|參與|比賽|活動|學會|隊|團|義工|服務|班長|風紀|joined|participated|member|team|club|band|choir|drama|debate|competition|award|prize|volunteer/i.test(clean);
+      const hasReflect = /學到|學會|培養|明白|克服|堅持|合作|自信|成長|目標|希望|貢獻|learned|learnt|taught|perseverance|teamwork|confidence|overcome|goal|hope to|contribute|future/i.test(clean);
+      const hasClosing = /多謝|謝謝|感謝|thank you|thanks for/i.test(clean);
+
+      let score = 1;
+      const pts = [hasGreet, hasSchool, hasExp, hasReflect, hasClosing].filter(Boolean).length;
+      if (wordLen >= (isEn ? 55 : 75) && pts >= 4 && hasReflect && hasSchool) score = 5;
+      else if (wordLen >= (isEn ? 38 : 50) && pts >= 3 && hasExp) score = 4;
+      else if (wordLen >= (isEn ? 22 : 30) && pts >= 2) score = 3;
+      else if (wordLen >= (isEn ? 12 : 16)) score = 2;
+      else score = 1;
+
+      const missingZh = [];
+      const missingEn = [];
+      if (!hasGreet) { missingZh.push('開首禮貌問候'); missingEn.push('polite greeting'); }
+      if (!hasSchool) { missingZh.push('扣連目標中學特色（如全人教育／STEAM）'); missingEn.push('target school focus (e.g. Holistic Education / STEAM)'); }
+      if (!hasExp) { missingZh.push('具體課外活動或比賽例子'); missingEn.push('a concrete activity or competition example'); }
+      if (!hasReflect) { missingZh.push('從經歷中學到的品格與未來目標'); missingEn.push('what you learned & your future goal'); }
+      if (!hasClosing) { missingZh.push('結語道謝'); missingEn.push('closing thank-you'); }
+
+      const praise = score >= 4 ? '結構清晰，能結合個人經歷與目標中學！ / Clear structure connecting your story and school!'
+                   : score === 3 ? '已涵蓋基本重點，再加細節即可升上 4–5 分！ / Good basics—add one concrete detail to reach 4–5!'
+                   : '已有良好起頭，請按 4 步曲補充內容！ / Good start—expand using the 4 steps!';
+
+      const qPrompt = !hasReflect
+        ? '引導問題 Questions：你在這項活動遇過甚麼困難？最後怎樣克服？ / What challenge did you face in this activity, and how did you overcome it?'
+        : !hasSchool
+        ? '引導問題 Questions：毅智書院哪一項特色（如 STEAM 或多元英語）最吸引你？ / Which JCMKEC feature (e.g. STEAM or English Drama) attracts you most?'
+        : '引導問題 Questions：入讀中學後，你希望參加甚麼學會延續這份熱誠？ / Which club do you hope to join in secondary school to continue your passion?';
+
+      const tipLine = missingZh.length
+        ? `下一步升級建議 Upgrade：可補充「${missingZh.slice(0, 2).join('、')}」(${missingEn.slice(0, 2).join(', ')})。`
+        : '下一步升級建議 Upgrade：練習自然眼神交流與微笑語速！ / Practise eye contact and confident pacing!';
+
+      const report = [
+        `1. 整體亮點 Highlights：${praise}`,
+        `2. 評分 Score：${score} / 5 分`,
+        `3. ${tipLine}`,
+        `4. ${qPrompt}`,
+        `5. 推薦詞彙 Vocab：perseverance (堅毅), team spirit (團隊精神), holistic education (全人教育)`
+      ].join('\n');
+
+      return { score, report };
+    }
+
+    function evaluateDiscussLocally(turns, lang) {
+      const joined = turns.join(' ');
+      const count = turns.length;
+      const hasRespond = /同意|認同|回應|承接|補充|小毅|小智|小德|agree|disagree|point|xiao yi|xiao zhi|xiao de|building on|respond/i.test(joined);
+      const hasExample = /例如|譬如|好似|試過|上次|平時|example|instance|such as|last week|once|when i/i.test(joined);
+      const hasAsk = /\?|？|點睇|覺得|同唔同意|呢|what do you think|how about|agree|opinion/i.test(joined);
+
+      let cScore = 3;
+      if (joined.length >= 45 && hasExample) cScore = count >= 2 ? 5 : 4;
+      else if (joined.length >= 22) cScore = 3;
+      else cScore = 2;
+
+      let iScore = 3;
+      if (hasRespond && hasAsk && count >= 2) iScore = 5;
+      else if (hasRespond || hasAsk) iScore = 4;
+      else iScore = count >= 2 ? 3 : 2;
+
+      const avg = (cScore + iScore) / 2;
+      const grade = avg >= 4.5 ? '優 (A)' : avg >= 3.5 ? '佳 (B+)' : avg >= 2.5 ? '尚可 (B)' : '待加強 (C)';
+      const tipZh = !hasExample ? '記得用「例如…」舉一個生活實例支持觀點！' : !hasAsk ? '發言結尾記得反問組員「你哋點睇？」增加互動！' : '表現出色！實體討論時記得保持眼神交流與點頭回應！';
+      const tipEn = !hasExample ? 'Add "For example..." with a real-life experience!' : !hasAsk ? 'End by asking "What do you think?" to invite peers!' : 'Great teamwork! Keep natural eye contact in the live discussion!';
+
+      const text = lang === 'en'
+        ? `• Content Score: ${cScore} / 5\n• Interaction Score: ${iScore} / 5\n• Overall Grade: ${grade}\n• Coach Tip: ${tipEn}`
+        : `• 內容表現 Content：${cScore} / 5 分\n• 互動表現 Interaction：${iScore} / 5 分\n• 總評級 Grade：${grade}\n• 教練建議 Tip：${tipZh}`;
+      return { grade, text };
     }
 
     // Stage 2: Scaffold, OCR, Grade
@@ -909,9 +1124,9 @@
           toast('✅ 已自動識別手寫文字！');
           return;
         }
-      } catch (e) {
-        lbl.textContent = '⚠️ 識字失敗，請用語音或手動輸入';
-      }
+      } catch (e) {}
+      lbl.textContent = '🎤 相片已附載！如 AI 識字繁忙，請按下方「🎤 語音輸入」對住小冊子讀出講稿（3秒自動變文字）！';
+      toast('🎤 請按「語音輸入」讀出小冊子草稿，自動轉成文字！');
     }
 
     document.getElementById('scanFileInput').addEventListener('change', (e) => {
@@ -955,7 +1170,7 @@
       if (!txt && !state.scannedImageDataUrl) { toast('⚠️ 請先拍照或輸入講稿'); return; }
       if (state.draftBefore && txt) document.getElementById('afterText').textContent = txt;
 
-      if (state.aiMode === 'poe') {
+      if (state.aiMode !== 'offline') {
         document.getElementById('introFeedback').textContent = '⏳ 極速批改中...';
         try {
           const reply = await callRemoteAI(`你是毅老師，用中英對照精簡點列批改以下${state.grade}自我介紹（禁止使用markdown星號或HTML標籤，總字數<=120字）：\n1.錯字 Typos：\n2.評分 Score (1-5)：\n3.引導問題 Questions：\n4.可用詞彙 Vocab：\n講稿：${txt}`, state.scannedImageDataUrl, 240);
@@ -973,7 +1188,12 @@
           }
         } catch (e) {}
       }
-      document.getElementById('introFeedback').textContent = '📊 品等：3 / 5 分 (尚可)\n• 建議補充比賽遇到的困難與學到的品格。';
+      const localRes = evaluateIntroLocally(txt);
+      state.introScore = localRes.score;
+      document.getElementById('introFeedback').innerHTML = `<div class="whitespace-pre-wrap">${escHtml(localRes.report).replace(/<br>/g, '\n')}</div>`;
+      document.getElementById('vIntro').textContent = localRes.score + ' / 5 分';
+      document.getElementById('introScorePill').textContent = localRes.score + ' / 5 分';
+      syncToGoogleSheet();
       gainXP(25);
     });
 
@@ -1045,7 +1265,7 @@
       const exp = state.equipped.exp.join(', ') || '課外活動';
       document.getElementById('qaCards').innerHTML = '<div class="p-5 rounded-2xl bg-[#f3efe8] text-xs font-bold animate-pulse">⚡ 正在快速生成 3 條中英對照面試題...</div>';
 
-      if (state.aiMode === 'poe') {
+      if (state.aiMode !== 'offline') {
         try {
           const raw = await callRemoteAI(`為報讀「${target}」（特色：${sch}）的小五學生（強項：${exp}）設計 3 條面試題，只輸出純 JSON 陣列：[{"zh":"中文問題","en":"English question","tip":"中英對照答題貼士"}]`, '', 320);
           const m = raw && raw.match(/\[[\s\S]*\]/);
@@ -1178,7 +1398,7 @@
         return;
       }
 
-      if (state.aiMode === 'poe') {
+      if (state.aiMode !== 'offline') {
         try {
           const hist = state.discussHistory.slice(-10).map(h => `${h.sender}: ${h.text}`).join('\n');
           const langRule = state.discussLang === 'en'
@@ -1267,7 +1487,7 @@ ${state.discussLang === 'en' ? 'Xiao Yi: (directly addresses student message + b
     document.getElementById('evalDiscussBtn').addEventListener('click', async () => {
       if (!state.discussTurns.length) { toast('⚠️ 請先發言至少 1 次'); return; }
       const box = document.getElementById('discussEvalBox');
-      if (state.aiMode === 'poe') {
+      if (state.aiMode !== 'offline') {
         box.textContent = '⏳ 正在快速評分...';
         try {
           const reply = await callRemoteAI(`以中英對照簡評以下討論發言（內容1-5分、互動1-5分，禁止使用星號或HTML標籤，<=90字）：\n${state.discussTurns.join('\n')}`, '', 180);
@@ -1279,7 +1499,11 @@ ${state.discussLang === 'en' ? 'Xiao Yi: (directly addresses student message + b
           }
         } catch (e) {}
       }
-      box.textContent = '🏆 總評級 Grade：佳 (B+)\n• 內容與互動表現良好，記得反問組員意見！\n• Good content & interaction! Remember to ask peers for their views.';
+      const localDisc = evaluateDiscussLocally(state.discussTurns, state.discussLang);
+      box.textContent = localDisc.text;
+      state.discussScore = localDisc.grade;
+      document.getElementById('vDiscuss').textContent = localDisc.grade;
+      syncToGoogleSheet();
       gainXP(25);
     });
 
@@ -1501,7 +1725,7 @@ h1{color:#a6744c;border-bottom:3px solid #c8956c;padding-bottom:8px;}h2{color:#0
         return;
       }
       buildSmartS3Hints(activeQaIdx);
-      if (state.aiMode !== 'poe') { toast('🖼️ 已依當前題目與你的輸入更新圖卡！'); return; }
+      if (state.aiMode === 'offline') { toast('🖼️ 已依當前題目與你的輸入更新圖卡！'); return; }
       toast('⏳ AI 正在依你的現有草稿度身設計接續提示...');
       try {
         const raw = await callRemoteAI(`題目：${item.zh} / ${item.en}
@@ -1625,7 +1849,7 @@ h1{color:#a6744c;border-bottom:3px solid #c8956c;padding-bottom:8px;}h2{color:#0
         return;
       }
       refreshS4LocalHints();
-      if (state.aiMode !== 'poe') { toast('🖼️ 已依最新對話與你的輸入更新圖卡！'); return; }
+      if (state.aiMode === 'offline') { toast('🖼️ 已依最新對話與你的輸入更新圖卡！'); return; }
       const topic = document.getElementById('discussTopic').value;
       const chatTxt = document.getElementById('discussChat').innerText.slice(-300);
       const langDesc = state.discussLang === 'en' ? 'simple Primary 6 English ONLY' : '繁體廣東話口語 ONLY';
@@ -1975,6 +2199,55 @@ ${chatTxt}
       }));
     }
     document.getElementById('tClassFilter').addEventListener('change', renderTeacherDashboard);
+
+    async function pushTeacherCloudConfig(forceModeVal) {
+      const url = getGasUrl();
+      if (!url) { toast('⚠️ 請先設定 Apps Script URL'); return; }
+      const gemKey = document.getElementById('tCloudGeminiKey')?.value.trim() || '';
+      const poeKey = document.getElementById('tCloudPoeKey')?.value.trim() || '';
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'set_class_config',
+            pin: TEACHER_PIN,
+            forceMode: forceModeVal,
+            geminiKey: gemKey,
+            backupPoeKey: poeKey
+          })
+        });
+        const j = await res.json();
+        if (j && j.ok) {
+          if (gemKey) state.geminiKey = gemKey;
+          document.getElementById('tForceModeBadge').textContent = forceModeVal === 'offline' ? '目前：全班免Token智能量表' : '目前：雲端後備Key已啟用';
+          toast('✅ 已同步雲端設定，全班平板會自動套用！');
+        } else {
+          toast('⚠️ 請先在 Apps Script 更新最新版 Code.gs 部署');
+        }
+      } catch (e) {
+        toast('⚠️ 連線失敗，請確認已更新 Code.gs 新版本部署');
+      }
+    }
+    document.getElementById('pushCloudKeysBtn')?.addEventListener('click', () => pushTeacherCloudConfig('auto'));
+    document.getElementById('forceClassOfflineBtn')?.addEventListener('click', () => pushTeacherCloudConfig('offline'));
+
+    // 啟動時輕量檢查老師是否有設定全班強制模式
+    (async function checkInitialCloudConfig() {
+      const url = getGasUrl();
+      if (!url) return;
+      try {
+        const r = await fetch(url + (url.includes('?') ? '&' : '?') + 'action=config');
+        const j = await r.json();
+        if (j && j.forceMode === 'offline') {
+          state.aiMode = 'offline';
+          updateEngineBadge('全班智能量表', 'bg-amber-500');
+        } else if (j && j.hasGeminiBackup) {
+          const b = document.getElementById('tForceModeBadge');
+          if (b) b.textContent = '目前：雲端 Gemini 後備已就緒';
+        }
+      } catch (e) {}
+    })();
 
     document.getElementById('exportCsvBtn').addEventListener('click', () => {
       if (!teacherRecords.length) { toast('⚠️ 目前沒有可匯出的紀錄'); return; }
